@@ -11,6 +11,7 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.abln.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -28,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#061B33",
           "android": {
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 76
@@ -39,6 +40,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "41c2903b-406c-4efd-8e8e-0275a5a3e93c"
+      }
+    },
+    "owner": "vishnu.soni"
   }
 }

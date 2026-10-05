@@ -1,6 +1,8 @@
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useUnreadCount } from "@/lib/notification-store";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ComponentProps, ReactNode, useState } from "react";
 import { Image, ImageSourcePropType, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -37,10 +39,10 @@ const SUMMARY: { key: string; icon: IconName; value: string; label: string; colo
 ];
 
 const CONNECTIONS: { name: string; role: string; company: string; tags: string[]; photo: ImageSourcePropType }[] = [
-  { name: "Rahul Agarwal", role: "CEO", company: "TechVision Pvt Ltd", tags: ["Technology", "Jaipur"], photo: require("../../assets/images/member-rahul.png") },
-  { name: "Sneha Bansal", role: "Founder", company: "GreenNest Solutions", tags: ["Sustainability", "Delhi"], photo: require("../../assets/images/member-sneha.png") },
-  { name: "Amit Goyal", role: "Director", company: "Goyal Enterprises", tags: ["Manufacturing", "Mumbai"], photo: require("../../assets/images/member-amit.png") },
-  { name: "Priya Mittal", role: "Co-Founder", company: "Kraftly Innovations", tags: ["E-commerce", "Bangalore"], photo: require("../../assets/images/member-priya.png") },
+  { name: "Rahul Agarwal", role: "CEO", company: "TechVision Pvt Ltd", tags: ["Technology", "Jaipur"], photo: require("../../../assets/images/member-rahul.png") },
+  { name: "Sneha Bansal", role: "Founder", company: "GreenNest Solutions", tags: ["Sustainability", "Delhi"], photo: require("../../../assets/images/member-sneha.png") },
+  { name: "Amit Goyal", role: "Director", company: "Goyal Enterprises", tags: ["Manufacturing", "Mumbai"], photo: require("../../../assets/images/member-amit.png") },
+  { name: "Priya Mittal", role: "Co-Founder", company: "Kraftly Innovations", tags: ["E-commerce", "Bangalore"], photo: require("../../../assets/images/member-priya.png") },
 ];
 
 const OPPORTUNITIES: { title: string; location: string; tags: string[] }[] = [
@@ -49,14 +51,6 @@ const OPPORTUNITIES: { title: string; location: string; tags: string[] }[] = [
 
 const EVENTS: { day: string; month: string; title: string; location: string; time: string; tags: string[] }[] = [
   { day: "25", month: "JAN", title: "ABLN Business Networking Meet", location: "Jaipur, Rajasthan", time: "10:00 AM - 4:00 PM", tags: ["Networking", "Business Growth"] },
-];
-
-const TABS: { key: string; icon: IconName; iconOn: IconName; label: string; badge?: boolean }[] = [
-  { key: "home", icon: "home-outline", iconOn: "home", label: "Home" },
-  { key: "network", icon: "people-outline", iconOn: "people", label: "Network" },
-  { key: "opportunities", icon: "briefcase-outline", iconOn: "briefcase", label: "Opportunities" },
-  { key: "events", icon: "calendar-outline", iconOn: "calendar", label: "Events" },
-  { key: "profile", icon: "person-outline", iconOn: "person", label: "Profile" },
 ];
 
 function SectionHeader({ title, action = "View All" }: { title: string; action?: string }) {
@@ -83,7 +77,7 @@ function Tag({ children }: { children: ReactNode }) {
 
 export default function Home() {
   const insets = useSafeAreaInsets();
-  const [tab, setTab] = useState("home");
+  const unreadCount = useUnreadCount();
   const [chip, setChip] = useState("all");
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
@@ -153,8 +147,8 @@ export default function Home() {
                   {g.options.map((o) => {
                     const on = (draft[g.key] ?? []).includes(o);
                     return (
-                      <Pressable key={o} onPress={() => toggleDraft(g.key, o)} style={[styles.chip, on && styles.chipOn]}>
-                        <Text style={[styles.chipText, { color: on ? PURPLE : Colors.navy }]}>{o}</Text>
+                      <Pressable key={o} onPress={() => toggleDraft(g.key, o)} style={[styles.chip, styles.chipOff, on && styles.chipOn]}>
+                        <Text style={[styles.chipText, { color: on ? Colors.goldDark : Colors.navy }]}>{o}</Text>
                       </Pressable>
                     );
                   })}
@@ -180,19 +174,19 @@ export default function Home() {
       >
         {/* Top bar */}
         <View style={styles.topBar}>
-          <Image source={require("../../assets/images/abln-logo-light.png")} style={styles.logo} resizeMode="contain" />
+          <Image source={require("../../../assets/images/abln-logo-light.png")} style={styles.logo} resizeMode="contain" />
           <View style={styles.topActions}>
-            <Pressable style={styles.bell} hitSlop={6}>
+            <Pressable style={styles.bell} hitSlop={6} onPress={() => router.push("/notifications")} accessibilityLabel="Notifications">
               <Ionicons name="notifications-outline" size={22} color={Colors.navy} />
-              <View style={styles.bellDot} />
+              {unreadCount > 0 ? <View style={styles.bellDot} /> : null}
             </Pressable>
-            <Image source={require("../../assets/images/avatar-user.png")} style={styles.avatarSm} />
+            <Image source={require("../../../assets/images/avatar-user.png")} style={styles.avatarSm} />
           </View>
         </View>
 
         {/* Hero */}
         <View style={styles.hero}>
-          <Image source={require("../../assets/images/hero-bg.png")} style={styles.heroImage} resizeMode="cover" />
+          <Image source={require("../../../assets/images/hero-bg.png")} style={styles.heroImage} resizeMode="cover" />
           <LinearGradient
             colors={[Colors.white, Colors.white, "rgba(255,255,255,0.8)", "rgba(255,255,255,0)"]}
             locations={[0, 0.3, 0.5, 0.68]}
@@ -256,9 +250,9 @@ export default function Home() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipsWrap}>
           {CHIPS.map((c) => {
             const on = chip === c.key;
-            const color = on ? PURPLE : Colors.navy;
-            return (
-              <Pressable key={c.key} onPress={() => (c.key === "more" ? openFilters() : setChip(c.key))} style={[styles.chip, on && styles.chipOn]}>
+            const color = on ? Colors.white : Colors.navy;
+            const content = (
+              <>
                 {c.mci ? (
                   <MaterialCommunityIcons name={c.mci} size={16} color={color} />
                 ) : c.icon ? (
@@ -266,6 +260,17 @@ export default function Home() {
                 ) : null}
                 <Text style={[styles.chipText, { color }]}>{c.label}</Text>
                 {c.key === "more" ? <Ionicons name="chevron-down" size={14} color={color} /> : null}
+              </>
+            );
+            return (
+              <Pressable key={c.key} onPress={() => (c.key === "more" ? openFilters() : setChip(c.key))} accessibilityRole="button">
+                {on ? (
+                  <LinearGradient colors={[Colors.gold, Colors.goldDark]} style={styles.chip}>
+                    {content}
+                  </LinearGradient>
+                ) : (
+                  <View style={[styles.chip, styles.chipOff]}>{content}</View>
+                )}
               </Pressable>
             );
           })}
@@ -293,11 +298,11 @@ export default function Home() {
             <SectionHeader title={isAll && !isFiltering ? "Recommended Connections" : "Members"} />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.connections} style={styles.bleed}>
               {members.map((m) => (
-                <View key={m.name} style={styles.connection}>
+                <Pressable key={m.name} style={styles.connection} onPress={() => router.push({ pathname: "/member-profile", params: { name: m.name } })}>
                   <View style={styles.connTop}>
                     <Image source={m.photo} style={styles.avatar} />
                     <Pressable style={styles.addBtn} hitSlop={6}>
-                      <Ionicons name="person-add-outline" size={14} color={PURPLE} />
+                      <Ionicons name="person-add-outline" size={14} color={Colors.goldDark} />
                     </Pressable>
                   </View>
                   <Text style={styles.memberName} numberOfLines={1}>
@@ -312,7 +317,7 @@ export default function Home() {
                       <Tag key={t}>{t}</Tag>
                     ))}
                   </View>
-                </View>
+                </Pressable>
               ))}
             </ScrollView>
           </>
@@ -323,7 +328,7 @@ export default function Home() {
           <View style={{ gap: 12 }}>
             <SectionHeader title="Businesses" />
             {members.map((m) => (
-              <View key={m.company} style={styles.card}>
+              <Pressable key={m.company} style={styles.card} onPress={() => router.push({ pathname: "/member-profile", params: { name: m.name } })}>
                 <View style={styles.cardTop}>
                   <View style={[styles.cardIcon, { backgroundColor: PURPLE_BG }]}>
                     <Ionicons name="business" size={22} color={PURPLE} />
@@ -343,7 +348,7 @@ export default function Home() {
                     <Tag key={t}>{t}</Tag>
                   ))}
                 </View>
-              </View>
+              </Pressable>
             ))}
           </View>
         ) : null}
@@ -476,24 +481,6 @@ export default function Home() {
         ) : null}
       </ScrollView>
 
-      {/* Bottom tab bar */}
-      <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-        {TABS.map((t) => {
-          const on = tab === t.key;
-          return (
-            <Pressable key={t.key} onPress={() => setTab(t.key)} style={styles.tab}>
-              <View>
-                <Ionicons name={on ? t.iconOn : t.icon} size={24} color={on ? Colors.goldDark : Colors.textSecondary} />
-                {t.badge ? <View style={styles.tabBadge} /> : null}
-              </View>
-              <Text style={[styles.tabLabel, on && styles.tabLabelOn]} numberOfLines={1}>
-                {t.label}
-              </Text>
-              <View style={[styles.tabUnderline, on && styles.tabUnderlineOn]} />
-            </Pressable>
-          );
-        })}
-      </View>
     </View>
   );
 }
@@ -609,13 +596,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
     height: 40,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.white,
   },
-  chipOn: { borderColor: PURPLE, backgroundColor: "#F6F3FD" },
+  chipOff: { borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.white },
+  chipOn: { borderColor: Colors.gold, backgroundColor: "#FDF6E6" },
   chipText: { fontFamily: Fonts.medium, fontSize: 12 },
 
   sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 4 },
@@ -642,7 +627,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: PURPLE_BG,
+    backgroundColor: GOLD_BG,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -701,17 +686,4 @@ const styles = StyleSheet.create({
   },
   promoBtnText: { fontFamily: Fonts.semiBold, fontSize: 12 },
 
-  tabBar: {
-    flexDirection: "row",
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#EEF1F5",
-    backgroundColor: Colors.white,
-  },
-  tab: { flexGrow: 1, flexShrink: 1, flexBasis: 0, minWidth: 0, alignItems: "center", gap: 3 },
-  tabBadge: { position: "absolute", top: -1, right: -2, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.error },
-  tabLabel: { color: Colors.textSecondary, fontFamily: Fonts.medium, fontSize: 10, textAlign: "center", alignSelf: "stretch" },
-  tabLabelOn: { color: Colors.goldDark, fontFamily: Fonts.bold },
-  tabUnderline: { width: 32, height: 3, borderRadius: 2, backgroundColor: "transparent", marginTop: 2 },
-  tabUnderlineOn: { backgroundColor: Colors.goldDark },
 });

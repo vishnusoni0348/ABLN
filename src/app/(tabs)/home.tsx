@@ -180,7 +180,9 @@ export default function Home() {
               <Ionicons name="notifications-outline" size={22} color={Colors.navy} />
               {unreadCount > 0 ? <View style={styles.bellDot} /> : null}
             </Pressable>
-            <Image source={require("../../../assets/images/avatar-user.png")} style={styles.avatarSm} />
+            <Pressable onPress={() => router.push("/business-card")} hitSlop={6} accessibilityLabel="My business card">
+              <Image source={require("../../../assets/images/avatar-user.png")} style={styles.avatarSm} />
+            </Pressable>
           </View>
         </View>
 

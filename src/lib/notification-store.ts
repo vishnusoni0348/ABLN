@@ -20,6 +20,8 @@ export type AppNotification = {
   // Set for notifications about a person; shown as an avatar instead of the icon.
   person?: { name: string; role: string; company: string; location: string; tags: string[]; verified?: boolean; photo?: ImageSourcePropType };
   detail: string;
+  // Set for connection requests awaiting a response; opens the Connection Request screen.
+  requestId?: string;
 };
 
 export const KIND_LABEL: Record<NotificationKind, string> = {
@@ -32,6 +34,25 @@ export const KIND_LABEL: Record<NotificationKind, string> = {
 
 // Sample content until the notifications API is wired up.
 const SEED: AppNotification[] = [
+  {
+    id: "n6",
+    kind: "connections",
+    title: "Neha Sharma",
+    body: "sent you a connection request.",
+    time: "Just now",
+    group: "Today",
+    read: false,
+    icon: "person-add-outline",
+    person: {
+      name: "Neha Sharma",
+      role: "Business Head",
+      company: "InnovaTech",
+      location: "Delhi, India",
+      tags: ["Technology", "Product"],
+    },
+    requestId: "c1",
+    detail: "Neha Sharma wants to connect with you. Review their profile to accept the request.",
+  },
   {
     id: "n1",
     kind: "connections",
@@ -104,24 +125,6 @@ const SEED: AppNotification[] = [
     icon: "ribbon-outline",
     detail: "Congratulations! Your ABLN membership has been approved. You now have full access to the network.",
   },
-  {
-    id: "n6",
-    kind: "connections",
-    title: "Neha Sharma",
-    body: "sent you a connection request.",
-    time: "1 day ago",
-    group: "Yesterday",
-    read: true,
-    icon: "person-add-outline",
-    person: {
-      name: "Neha Sharma",
-      role: "Business Head",
-      company: "InnovaTech",
-      location: "Delhi, India",
-      tags: ["Technology", "Product"],
-    },
-    detail: "Neha Sharma wants to connect with you. Review their profile to accept the request.",
-  },
 ];
 
 type State = { items: AppNotification[] };
@@ -132,6 +135,11 @@ const listeners = new Set<() => void>();
 function set(items: AppNotification[]) {
   state = { items };
   listeners.forEach((l) => l());
+}
+
+export function addNotification(n: Pick<AppNotification, "title" | "body" | "detail" | "person">) {
+  const item: AppNotification = { ...n, id: `n${Date.now()}`, kind: "introductions", time: "Just now", group: "Today", read: false, icon: "hand-left-outline" };
+  set([item, ...state.items]);
 }
 
 export function markRead(id: string, read = true) {

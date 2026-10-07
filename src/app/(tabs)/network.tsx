@@ -1,6 +1,7 @@
 import { Avatar, ConnectButton, GOLD_BG, MemberRow, Tag } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { EMPTY_FILTERS, type Filters, type SortKey } from "@/data/members";
+import { useConnections } from "@/lib/connection-store";
 import { setDirectory, toggleRequest, useDirectory } from "@/lib/directory-store";
 import { useUnreadCount } from "@/lib/notification-store";
 import { Ionicons } from "@expo/vector-icons";
@@ -78,6 +79,7 @@ export default function Network() {
   const { requested } = useDirectory();
   const unreadCount = useUnreadCount();
   const [moreOpen, setMoreOpen] = useState(false);
+  const { connections } = useConnections();
 
   // Hands a search over to the Search Results screen.
   const openResults = (term: string) => {
@@ -125,6 +127,19 @@ export default function Network() {
             style={styles.moreRow}
             onPress={() => {
               setMoreOpen(false);
+              router.push("/my-connections");
+            }}
+          >
+            <View style={styles.moreIcon}>
+              <Ionicons name="people-outline" size={20} color={Colors.goldDark} />
+            </View>
+            <Text style={styles.moreLabel}>My Connections ({connections.length})</Text>
+            <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+          </Pressable>
+          <Pressable
+            style={styles.moreRow}
+            onPress={() => {
+              setMoreOpen(false);
               router.navigate("/filter-members");
             }}
           >
@@ -145,6 +160,9 @@ export default function Network() {
         <View style={styles.topBar}>
           <Image source={require("../../../assets/images/abln-logo-light.png")} style={styles.logo} resizeMode="contain" />
           <View style={styles.topActions}>
+            <Pressable style={styles.bell} hitSlop={6} onPress={() => router.push("/my-introductions")} accessibilityLabel="My introduction requests">
+              <Ionicons name="people-circle-outline" size={24} color={Colors.navy} />
+            </Pressable>
             <Pressable style={styles.bell} hitSlop={6} onPress={() => router.push("/notifications")} accessibilityLabel="Notifications">
               <Ionicons name="notifications-outline" size={22} color={Colors.navy} />
               {unreadCount > 0 ? <View style={styles.bellDot} /> : null}

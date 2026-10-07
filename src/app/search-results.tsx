@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   tipsTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 13 },
   tip: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 12, lineHeight: 18 },
 
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.7)" },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(255,255,255,0.7)" },
   sortClose: { position: "absolute", right: 16 },
   sortCard: {
     position: "absolute",

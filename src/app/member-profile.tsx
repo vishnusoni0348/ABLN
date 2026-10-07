@@ -1,7 +1,9 @@
 import { Avatar, CARD_SHADOW, GOLD_BG, Tag } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { findMember, type Member } from "@/data/members";
+import { recordSent, useConnections } from "@/lib/connection-store";
 import { toggleRequest, useDirectory } from "@/lib/directory-store";
+import { useLiveIntroTo } from "@/lib/introduction-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -95,6 +97,8 @@ export default function MemberProfile() {
   const { name } = useLocalSearchParams<{ name: string }>();
   const member = findMember(name);
   const { requested } = useDirectory();
+  const activeIntro = useLiveIntroTo(name ?? "");
+  const { connections } = useConnections();
   const [sheet, setSheet] = useState(false);
   const [note, setNote] = useState("");
 
@@ -108,14 +112,26 @@ export default function MemberProfile() {
   }
 
   const isRequested = requested.includes(member.name);
-  const intro = () => Alert.alert("Request Introduction", `We'll ask your mutual connections to introduce you to ${member.name}.`);
+  const introLabel = activeIntro ? "Introduction Status" : "Request Introduction";
+  const intro = () =>
+    activeIntro ? router.push({ pathname: "/introduction-details", params: { id: activeIntro.id } }) : router.push({ pathname: "/request-introduction", params: { name: member.name } });
   const share = () => Share.share({ message: `${member.name} - ${member.role}, ${member.company} on ABLN` }).catch(() => {});
   const closeSheet = () => setSheet(false);
   const send = () => {
-    if (!isRequested) toggleRequest(member.name);
+    if (!isRequested) {
+      toggleRequest(member.name);
+      recordSent(member.name);
+    }
     setNote("");
     closeSheet();
+    router.push({ pathname: "/connection-sent", params: { name: member.name } });
   };
+  const cancelRequest = () =>
+    Alert.alert("Cancel connection request?", `Your request to ${member.name} will be withdrawn.`, [
+      { text: "Keep Request", style: "cancel" },
+      { text: "Cancel Request", style: "destructive", onPress: () => toggleRequest(member.name) },
+    ]);
+  const onConnect = () => (isRequested ? cancelRequest() : setSheet(true));
   const report = () => {
     closeSheet();
     Alert.alert("Report / Block", `What would you like to do with ${member.name}?`, [
@@ -126,8 +142,8 @@ export default function MemberProfile() {
   };
 
   const actions: { icon: IconName; title: string; sub: string; onPress: () => void; danger?: boolean }[] = [
-    { icon: "people-outline", title: "Request an Introduction", sub: "Ask for an introduction through mutual connections", onPress: () => { closeSheet(); intro(); } },
-    { icon: "card-outline", title: "View Digital Business Card", sub: "View and share contact details", onPress: () => { closeSheet(); Alert.alert("Digital Business Card", "Available once your connection request is accepted."); } },
+    { icon: "people-outline", title: activeIntro ? "View Introduction Status" : "Request an Introduction", sub: activeIntro ? "Track or cancel your introduction request" : "Ask for an introduction through mutual connections", onPress: () => { closeSheet(); intro(); } },
+    { icon: "card-outline", title: "View Digital Business Card", sub: "View and share contact details", onPress: () => { closeSheet(); if (connections.some((c) => c.name === member.name)) router.push({ pathname: "/business-card", params: { name: member.name } }); else Alert.alert("Digital Business Card", "Available once your connection request is accepted."); } },
     { icon: "paper-plane-outline", title: "Share Profile", sub: "Share via WhatsApp, Email or Copy Link", onPress: () => { closeSheet(); share(); } },
     { icon: "ban-outline", title: "Report / Block", sub: "Report this profile or block this member", onPress: report, danger: true },
   ];
@@ -155,7 +171,11 @@ export default function MemberProfile() {
               {note.length}/{MAX_NOTE}
             </Text>
           </View>
-          <GoldButton label={isRequested ? "Request Sent" : "Send Connection Request"} icon="paper-plane-outline" onPress={send} style={{ marginTop: 14 }} />
+          {isRequested ? (
+            <OutlineButton label="Cancel Connection Request" onPress={() => { closeSheet(); cancelRequest(); }} style={{ marginTop: 14 }} />
+          ) : (
+            <GoldButton label="Send Connection Request" icon="paper-plane-outline" onPress={send} style={{ marginTop: 14 }} />
+          )}
           <View style={styles.actions}>
             {actions.map((a) => (
               <Pressable key={a.title} style={styles.actionRow} onPress={a.onPress}>
@@ -177,15 +197,15 @@ export default function MemberProfile() {
       </Modal>
 
       {member.restricted ? (
-        <RestrictedProfile member={member} top={insets.top} requested={isRequested} onConnect={() => setSheet(true)} onIntro={intro} onMore={() => setSheet(true)} />
+        <RestrictedProfile member={member} top={insets.top} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onMore={() => setSheet(true)} />
       ) : (
-        <FullProfile member={member} top={insets.top} requested={isRequested} onConnect={() => setSheet(true)} onIntro={intro} onShare={share} onMore={() => setSheet(true)} />
+        <FullProfile member={member} top={insets.top} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onShare={share} onMore={() => setSheet(true)} />
       )}
     </View>
   );
 }
 
-function FullProfile({ member: m, top, requested, onConnect, onIntro, onShare, onMore }: { member: Member; top: number; requested: boolean; onConnect: () => void; onIntro: () => void; onShare: () => void; onMore: () => void }) {
+function FullProfile({ member: m, top, requested, onConnect, onIntro, introLabel, onShare, onMore }: { member: Member; top: number; requested: boolean; onConnect: () => void; onIntro: () => void; introLabel: string; onShare: () => void; onMore: () => void }) {
   const [city] = m.location.split(", ");
   const about = m.about ?? `${m.role} at ${m.company}, working in ${m.industry}. Open to collaborations, partnerships and new opportunities.`;
   const markets = m.markets ?? [m.country];
@@ -209,8 +229,8 @@ function FullProfile({ member: m, top, requested, onConnect, onIntro, onShare, o
               <View style={styles.online} />
             </View>
             <View style={styles.sideBtns}>
-              <GoldButton label={requested ? "Requested" : "Connect"} onPress={onConnect} />
-              <OutlineButton label="Request Intro" onPress={onIntro} />
+              {requested ? <OutlineButton label="Cancel Request" onPress={onConnect} /> : <GoldButton label="Connect" onPress={onConnect} />}
+              <OutlineButton label={introLabel === "Request Introduction" ? "Request Intro" : "Intro Status"} onPress={onIntro} />
               <OutlineButton label="Share" onPress={onShare} />
             </View>
           </View>
@@ -261,7 +281,7 @@ function FullProfile({ member: m, top, requested, onConnect, onIntro, onShare, o
   );
 }
 
-function RestrictedProfile({ member: m, top, requested, onConnect, onIntro, onMore }: { member: Member; top: number; requested: boolean; onConnect: () => void; onIntro: () => void; onMore: () => void }) {
+function RestrictedProfile({ member: m, top, requested, onConnect, onIntro, introLabel, onMore }: { member: Member; top: number; requested: boolean; onConnect: () => void; onIntro: () => void; introLabel: string; onMore: () => void }) {
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingTop: top + 56 }]}>
@@ -293,8 +313,8 @@ function RestrictedProfile({ member: m, top, requested, onConnect, onIntro, onMo
           </View>
 
           <View style={styles.rBtns}>
-            <GoldButton label={requested ? "Requested" : "Connect"} onPress={onConnect} style={styles.flex} />
-            <OutlineButton label="Request Introduction" onPress={onIntro} style={styles.flex} />
+            {requested ? <OutlineButton label="Cancel Request" onPress={onConnect} style={styles.flex} /> : <GoldButton label="Connect" onPress={onConnect} style={styles.flex} />}
+            <OutlineButton label={introLabel} onPress={onIntro} style={styles.flex} />
           </View>
 
           <View style={styles.card}>

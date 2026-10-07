@@ -1,4 +1,6 @@
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
+import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Manrope_400Regular,
   Manrope_500Medium,
@@ -16,14 +18,35 @@ export default function RootLayout() {
     Manrope_700Bold,
   });
 
+  const insets = useSafeAreaInsets();
+  const pathname = usePathname();
+
   if (!loaded) return null;
 
+  // Dark full-bleed screens (splash/welcome) keep a transparent status bar.
+  const showStatusBarBg = pathname !== "/" && pathname !== "/welcome";
+
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: Colors.background },
-      }}
-    />
+    <>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: Colors.background },
+        }}
+      />
+      {showStatusBarBg && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: insets.top,
+            backgroundColor: Colors.background,
+          }}
+        />
+      )}
+    </>
   );
 }

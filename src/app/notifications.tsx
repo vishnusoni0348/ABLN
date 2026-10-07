@@ -61,6 +61,10 @@ export default function Notifications() {
 
   const open = (n: AppNotification) => {
     markRead(n.id);
+    if (n.requestId) {
+      router.push({ pathname: "/connection-request", params: { id: n.requestId } });
+      return;
+    }
     router.push({ pathname: "/notification-detail", params: { id: n.id } });
   };
 
@@ -212,7 +216,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
   pressed: { opacity: 0.85 },
   topBar: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
-  title: { flex: 1, color: Colors.navy, fontFamily: Fonts.bold, fontSize: 24 },
+  title: { flex: 1, color: Colors.navy, fontFamily: Fonts.bold, fontSize: 17 },
   markAll: { color: Colors.goldDark, fontFamily: Fonts.semiBold, fontSize: 12 },
   markAllOff: { color: Colors.textMuted },
   scroll: { paddingHorizontal: 16, gap: 14, flexGrow: 1 },

@@ -1,18 +1,18 @@
 import { Colors, Fonts } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Tabs } from "expo-router";
 import { ComponentProps } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+type BottomTabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>["tabBar"]>>[0];
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
 // `route` is the screen under (tabs)/; tabs without one are placeholders until their screens exist.
 const TABS: { key: string; route?: string; icon: IconName; iconOn: IconName; label: string; badge?: boolean }[] = [
   { key: "home", route: "home", icon: "home-outline", iconOn: "home", label: "Home" },
   { key: "network", route: "network", icon: "people-outline", iconOn: "people", label: "Network" },
-  { key: "opportunities", icon: "briefcase-outline", iconOn: "briefcase", label: "Opportunities" },
+  { key: "opportunities", route: "opportunities", icon: "briefcase-outline", iconOn: "briefcase", label: "Opportunities" },
   { key: "events", icon: "calendar-outline", iconOn: "calendar", label: "Events" },
   { key: "messages", icon: "chatbox-ellipses-outline", iconOn: "chatbox-ellipses", label: "Messages", badge: true },
   { key: "more", icon: "grid-outline", iconOn: "grid", label: "More" },
@@ -52,6 +52,7 @@ export default function TabsLayout() {
     <Tabs backBehavior="history" tabBar={(props) => <TabBar {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: Colors.white } }}>
       <Tabs.Screen name="home" />
       <Tabs.Screen name="network" />
+      <Tabs.Screen name="opportunities" />
     </Tabs>
   );
 }

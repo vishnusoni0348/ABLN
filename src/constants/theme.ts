@@ -12,6 +12,7 @@ export const Colors = {
 
   // Neutral
   white: "#FFFFFF",
+  offwhite: "#F8FAFC",
   softWhite: "#F5F7FA",
   background: "#F8FAFC",
   textPrimary: "#061B33",

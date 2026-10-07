@@ -32,7 +32,7 @@ function MineCard({ o }: { o: MyOpportunity }) {
   return (
     <View style={[styles.card, CARD_SHADOW]}>
       <View style={styles.cardTop}>
-        <OppThumb category={o.category} size={88} />
+        <OppThumb category={o.category} size={88} uri={o.cover} />
         <View style={styles.flex}>
           <View style={styles.titleRow}>
             <Text style={styles.cardTitle} numberOfLines={2}>
@@ -68,7 +68,8 @@ function MineCard({ o }: { o: MyOpportunity }) {
 
 export default function MyOpportunities() {
   const insets = useSafeAreaInsets();
-  const { mine } = useOpportunities();
+  const { mine, incoming } = useOpportunities();
+  const pending = incoming.filter((r) => !r.decision);
   const [tab, setTab] = useState<MineStatus>("Active");
   const list = mine.filter((m) => m.status === tab);
 
@@ -80,7 +81,7 @@ export default function MyOpportunities() {
           title="My Opportunities"
           right={
             <Pressable
-              onPress={() => Alert.alert("Coming soon", "Creating opportunities will be available shortly.")}
+              onPress={() => router.push("/create-opportunity")}
               style={({ pressed }) => pressed && styles.pressed}
               accessibilityRole="button"
               accessibilityLabel="Create opportunity"
@@ -103,6 +104,14 @@ export default function MyOpportunities() {
             );
           })}
         </View>
+
+        {pending.length ? (
+          <Pressable style={({ pressed }) => [styles.requests, pressed && styles.pressed]} onPress={() => router.push({ pathname: "/interest-request", params: { id: pending[0].id } })} accessibilityRole="button">
+            <Ionicons name="people-outline" size={20} color={Colors.goldDark} />
+            <Text style={styles.requestsText}>{`${pending.length} new interest ${pending.length === 1 ? "request" : "requests"}`}</Text>
+            <Ionicons name="chevron-forward" size={18} color={Colors.goldDark} />
+          </Pressable>
+        ) : null}
 
         {list.length ? (
           list.map((o) => <MineCard key={o.id} o={o} />)
@@ -127,6 +136,8 @@ const styles = StyleSheet.create({
   tabText: { color: Colors.navy, fontFamily: Fonts.medium, fontSize: 12 },
   tabTextOn: { color: Colors.white, fontFamily: Fonts.bold },
 
+  requests: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14, borderRadius: Radius.md, backgroundColor: "#FEF6E3" },
+  requestsText: { flex: 1, color: Colors.navy, fontFamily: Fonts.semiBold, fontSize: 13 },
   card: { padding: 12, borderRadius: Radius.lg, backgroundColor: Colors.white },
   cardTop: { flexDirection: "row", gap: 12 },
   titleRow: { flexDirection: "row", alignItems: "flex-start", gap: 6 },

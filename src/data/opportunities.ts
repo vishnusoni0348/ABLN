@@ -3,7 +3,7 @@ export const CATEGORIES = ["Partnership", "Investment", "Distribution", "Collabo
 export type Category = (typeof CATEGORIES)[number];
 
 export const STATUSES = ["Open", "Closing Soon", "Featured"] as const;
-export type OppStatus = (typeof STATUSES)[number];
+export type OppStatus = (typeof STATUSES)[number] | "Closed";
 
 export const POSTED_BY = ["ABLN Members", "Verified Companies"] as const;
 export type PostedBy = (typeof POSTED_BY)[number];
@@ -42,6 +42,7 @@ export type Opportunity = {
   postedBy: PostedBy;
   postedDaysAgo: number;
   about: string;
+  interested?: number; // members who expressed interest
 };
 
 export const OPPORTUNITIES: Opportunity[] = [
@@ -173,6 +174,23 @@ export const OPPORTUNITIES: Opportunity[] = [
     postedDaysAgo: 20,
     about: "Premium residential project in Mumbai seeking a co-investor and development partner.",
   },
+  {
+    id: "o9",
+    title: "Logistics Tie-up for E-commerce Delivery",
+    category: "Services",
+    industry: "Services",
+    location: "Mumbai, Maharashtra",
+    valueLabel: "₹50L – 2 Cr",
+    minL: 50,
+    maxL: 200,
+    deadline: "2026-09-30",
+    deadlineLabel: "30 Sep 2026",
+    status: "Closed",
+    postedBy: "ABLN Members",
+    postedDaysAgo: 40,
+    about: "Last-mile logistics partnership for a growing e-commerce brand across metro cities.",
+    interested: 24,
+  },
 ];
 
 export type Filters = {
@@ -212,7 +230,7 @@ export function searchOpportunities(query: string, f: Filters, sort: SortKey): O
 }
 
 export type MineStatus = "Active" | "Pending" | "Closed";
-export type MyOpportunity = { id: string; title: string; category: Category; industry: string; location: string; valueLabel: string; postedLabel: string; status: MineStatus };
+export type MyOpportunity = { id: string; title: string; category: Category; industry: string; location: string; valueLabel: string; postedLabel: string; status: MineStatus; cover?: string };
 
 export const MY_OPPORTUNITIES: MyOpportunity[] = [
   { id: "m1", title: "IT Consulting Partnership for SMEs", category: "Partnership", industry: "Services", location: "Delhi, India", valueLabel: "₹50L – 2 Cr", postedLabel: "10 Oct 2026", status: "Active" },

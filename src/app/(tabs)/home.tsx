@@ -1,6 +1,6 @@
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useUnreadCount } from "@/lib/notification-store";
+import { TabHeader } from "@/components/tab-header";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -77,7 +77,6 @@ function Tag({ children }: { children: ReactNode }) {
 
 export default function Home() {
   const insets = useSafeAreaInsets();
-  const unreadCount = useUnreadCount();
   const [chip, setChip] = useState("all");
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
@@ -168,24 +167,8 @@ export default function Home() {
           </Pressable>
         </View>
       </Modal>
-      <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8, paddingBottom: 24 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Top bar */}
-        <View style={styles.topBar}>
-          <Image source={require("../../../assets/images/abln-logo-light.png")} style={styles.logo} resizeMode="contain" />
-          <View style={styles.topActions}>
-            <Pressable style={styles.bell} hitSlop={6} onPress={() => router.push("/notifications")} accessibilityLabel="Notifications">
-              <Ionicons name="notifications-outline" size={22} color={Colors.navy} />
-              {unreadCount > 0 ? <View style={styles.bellDot} /> : null}
-            </Pressable>
-            <Pressable onPress={() => router.push("/business-card")} hitSlop={6} accessibilityLabel="My business card">
-              <Image source={require("../../../assets/images/avatar-user.png")} style={styles.avatarSm} />
-            </Pressable>
-          </View>
-        </View>
-
+      <TabHeader onAvatarPress={() => router.push("/business-card")} />
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: 6, paddingBottom: 24 }]} showsVerticalScrollIndicator={false}>
         {/* Hero */}
         <View style={styles.hero}>
           <Image source={require("../../../assets/images/hero-bg.png")} style={styles.heroImage} resizeMode="cover" />
@@ -501,22 +484,6 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.85 },
   scroll: { paddingHorizontal: 16, gap: 14 },
   bleed: { marginHorizontal: -16 },
-
-  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  logo: { width: 130, height: 50 },
-  topActions: { flexDirection: "row", alignItems: "center", gap: 12 },
-  bell: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.white,
-  },
-  bellDot: { position: "absolute", top: 9, right: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.error },
-  avatarSm: { width: 42, height: 42, borderRadius: 21 },
 
   hero: {
     borderRadius: Radius.lg,

@@ -205,7 +205,7 @@ export function MultiSelect({
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 
 /** Picks an image from the library, enforcing the 2MB limit shown in the UI. */
-export function usePickImage(onPicked: (uri: string) => void) {
+export function usePickImage(onPicked: (uri: string) => void, aspect: [number, number] = [1, 1]) {
   return async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
@@ -215,7 +215,7 @@ export function usePickImage(onPicked: (uri: string) => void) {
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
-      aspect: [1, 1],
+      aspect,
       quality: 0.7,
     });
     if (res.canceled) return;

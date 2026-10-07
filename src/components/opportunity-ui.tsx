@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { ComponentProps } from "react";
-import { Pressable, ScrollView, StyleProp, StyleSheet, Text, TextInput, View, ViewStyle } from "react-native";
+import { Image, Pressable, ScrollView, StyleProp, StyleSheet, Text, TextInput, View, ViewStyle } from "react-native";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -21,12 +21,12 @@ const ART: Record<Category, { icon: IconName; colors: [string, string] }> = {
 
 export const GOLD_GRADIENT = [Colors.goldLight, Colors.champagne, Colors.gold] as const;
 
-export function OppThumb({ category, featured, size, style }: { category: Category; featured?: boolean; size?: number; style?: StyleProp<ViewStyle> }) {
+export function OppThumb({ category, featured, size, style, uri }: { category: Category; featured?: boolean; size?: number; style?: StyleProp<ViewStyle>; uri?: string }) {
   const art = ART[category];
   const box = size ? { width: size, height: size } : undefined;
   return (
     <LinearGradient colors={art.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.thumb, box, style]}>
-      <Ionicons name={art.icon} size={size ? size * 0.42 : 56} color="rgba(255,255,255,0.85)" />
+      {uri ? <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" /> : <Ionicons name={art.icon} size={size ? size * 0.42 : 56} color="rgba(255,255,255,0.85)" />}
       {featured ? <Text style={styles.featuredBadge}>Featured</Text> : null}
     </LinearGradient>
   );

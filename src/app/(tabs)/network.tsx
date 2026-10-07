@@ -3,7 +3,7 @@ import { Colors, Fonts, Radius } from "@/constants/theme";
 import { EMPTY_FILTERS, type Filters, type SortKey } from "@/data/members";
 import { useConnections } from "@/lib/connection-store";
 import { setDirectory, toggleRequest, useDirectory } from "@/lib/directory-store";
-import { useUnreadCount } from "@/lib/notification-store";
+import { HeaderIconButton, TabHeader } from "@/components/tab-header";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -77,7 +77,6 @@ export default function Network() {
   const [chip, setChip] = useState("all");
   const [query, setQuery] = useState("");
   const { requested } = useDirectory();
-  const unreadCount = useUnreadCount();
   const [moreOpen, setMoreOpen] = useState(false);
   const { connections } = useConnections();
 
@@ -151,26 +150,10 @@ export default function Network() {
           </Pressable>
         </View>
       </Modal>
-      <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8, paddingBottom: 24 }]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Top bar */}
-        <View style={styles.topBar}>
-          <Image source={require("../../../assets/images/abln-logo-light.png")} style={styles.logo} resizeMode="contain" />
-          <View style={styles.topActions}>
-            <Pressable style={styles.bell} hitSlop={6} onPress={() => router.push("/my-introductions")} accessibilityLabel="My introduction requests">
-              <Ionicons name="people-circle-outline" size={24} color={Colors.navy} />
-            </Pressable>
-            <Pressable style={styles.bell} hitSlop={6} onPress={() => router.push("/notifications")} accessibilityLabel="Notifications">
-              <Ionicons name="notifications-outline" size={22} color={Colors.navy} />
-              {unreadCount > 0 ? <View style={styles.bellDot} /> : null}
-            </Pressable>
-            <Image source={require("../../../assets/images/avatar-user.png")} style={styles.avatarSm} />
-          </View>
-        </View>
-
+      <TabHeader
+        extraActions={<HeaderIconButton icon="people-circle-outline" size={24} onPress={() => router.push("/my-introductions")} label="My introduction requests" />}
+      />
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: 6, paddingBottom: 24 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Hero */}
         <View style={styles.hero}>
           <Image source={require("../../../assets/images/network-hero-banner.jpg")} style={StyleSheet.absoluteFill} resizeMode="cover" />
@@ -379,22 +362,6 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.85 },
   scroll: { paddingHorizontal: 16, gap: 14 },
   bleed: { marginHorizontal: -16, flexGrow: 0 },
-
-  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  logo: { width: 130, height: 50 },
-  topActions: { flexDirection: "row", alignItems: "center", gap: 12 },
-  bell: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.white,
-  },
-  bellDot: { position: "absolute", top: 9, right: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.error },
-  avatarSm: { width: 42, height: 42, borderRadius: 21 },
 
   hero: { aspectRatio: HERO_RATIO, justifyContent: "center", gap: 6, overflow: "hidden", borderRadius: Radius.lg, paddingLeft: 4 },
   heroTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 32, lineHeight: 38 },

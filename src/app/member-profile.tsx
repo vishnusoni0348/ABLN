@@ -144,6 +144,7 @@ export default function MemberProfile() {
   const actions: { icon: IconName; title: string; sub: string; onPress: () => void; danger?: boolean }[] = [
     { icon: "people-outline", title: activeIntro ? "View Introduction Status" : "Request an Introduction", sub: activeIntro ? "Track or cancel your introduction request" : "Ask for an introduction through mutual connections", onPress: () => { closeSheet(); intro(); } },
     { icon: "card-outline", title: "View Digital Business Card", sub: "View and share contact details", onPress: () => { closeSheet(); if (connections.some((c) => c.name === member.name)) router.push({ pathname: "/business-card", params: { name: member.name } }); else Alert.alert("Digital Business Card", "Available once your connection request is accepted."); } },
+    { icon: "bulb-outline", title: "Ask for Advice", sub: "Get free or paid advice from this expert", onPress: () => { closeSheet(); router.push({ pathname: member.restricted ? "/expert-profile" : "/expert-card", params: { name: member.name } }); } },
     { icon: "paper-plane-outline", title: "Share Profile", sub: "Share via WhatsApp, Email or Copy Link", onPress: () => { closeSheet(); share(); } },
     { icon: "ban-outline", title: "Report / Block", sub: "Report this profile or block this member", onPress: report, danger: true },
   ];

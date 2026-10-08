@@ -2,10 +2,13 @@ import { Colors, Fonts, Radius } from "@/constants/theme";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { TabHeader } from "@/components/tab-header";
 import { LinearGradient } from "expo-linear-gradient";
+import { QuestionCard } from "@/components/ask-ui";
+import { searchQuestions } from "@/data/questions";
+import { resetDraft, useQuestions } from "@/lib/question-store";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ComponentProps, ReactNode, useState } from "react";
-import { Image, ImageSourcePropType, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ComponentProps, ReactNode, useEffect, useRef, useState } from "react";
+import { Image, ImageSourcePropType, NativeScrollEvent, NativeSyntheticEvent, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -45,19 +48,19 @@ const CONNECTIONS: { name: string; role: string; company: string; tags: string[]
   { name: "Priya Mittal", role: "Co-Founder", company: "Kraftly Innovations", tags: ["E-commerce", "Bangalore"], photo: require("../../../assets/images/member-priya.png") },
 ];
 
-const OPPORTUNITIES: { title: string; location: string; tags: string[] }[] = [
-  { title: "Looking for Technology Partners for Expansion", location: "India (Multiple Cities)", tags: ["Partnership", "Technology", "Expansion"] },
+const OPPORTUNITIES: { id: string; title: string; location: string; tags: string[] }[] = [
+  { id: "o10", title: "Looking for Technology Partners for Expansion", location: "India (Multiple Cities)", tags: ["Partnership", "Technology", "Expansion"] },
 ];
 
 const EVENTS: { day: string; month: string; title: string; location: string; time: string; tags: string[] }[] = [
   { day: "25", month: "JAN", title: "ABLN Business Networking Meet", location: "Jaipur, Rajasthan", time: "10:00 AM - 4:00 PM", tags: ["Networking", "Business Growth"] },
 ];
 
-function SectionHeader({ title, action = "View All" }: { title: string; action?: string }) {
+function SectionHeader({ title, action = "View All", onAction }: { title: string; action?: string; onAction?: () => void }) {
   return (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      <Pressable hitSlop={8} style={styles.viewAll}>
+      <Pressable hitSlop={8} style={styles.viewAll} onPress={onAction} accessibilityRole="button">
         <Text style={styles.viewAllText}>{action}</Text>
         <Ionicons name="arrow-forward" size={14} color={Colors.goldDark} />
       </Pressable>
@@ -71,6 +74,71 @@ function Tag({ children }: { children: ReactNode }) {
       <Text style={styles.tagText} numberOfLines={1}>
         {children}
       </Text>
+    </View>
+  );
+}
+
+const BANNERS: { key: string; label: string; image: ImageSourcePropType; href: "/network" | "/opportunities" }[] = [
+  { key: "network", label: "Explore Network", image: require("../../../assets/images/hero-banner.png"), href: "/network" },
+  { key: "opportunities", label: "Explore Opportunities", image: require("../../../assets/images/hero-opportunities.png"), href: "/opportunities" },
+];
+
+function HeroSlider() {
+  const { width: screenWidth } = useWindowDimensions();
+  const width = screenWidth - 32;
+  const scrollRef = useRef<ScrollView>(null);
+  const [index, setIndex] = useState(0);
+  const indexRef = useRef(0);
+  const paused = useRef(false);
+
+  const goTo = (i: number) => {
+    indexRef.current = i;
+    setIndex(i);
+    scrollRef.current?.scrollTo({ x: i * width, animated: true });
+  };
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!paused.current) goTo((indexRef.current + 1) % BANNERS.length);
+    }, 4000);
+    return () => clearInterval(id);
+  }, [width]);
+
+  const onEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    paused.current = false;
+    const i = Math.round(e.nativeEvent.contentOffset.x / width);
+    indexRef.current = i;
+    setIndex(i);
+  };
+
+  return (
+    <View style={{ gap: 8 }}>
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScrollBeginDrag={() => (paused.current = true)}
+        onMomentumScrollEnd={onEnd}
+        style={styles.hero}
+      >
+        {BANNERS.map((b) => (
+          <Pressable
+            key={b.key}
+            style={({ pressed }) => [{ width, aspectRatio: 1672 / 941 }, pressed && styles.pressed]}
+            onPress={() => router.navigate(b.href)}
+            accessibilityRole="button"
+            accessibilityLabel={b.label}
+          >
+            <Image source={b.image} style={styles.heroImage} resizeMode="cover" />
+          </Pressable>
+        ))}
+      </ScrollView>
+      <View style={styles.dots}>
+        {BANNERS.map((b, i) => (
+          <View key={b.key} style={[styles.dot, i === index && styles.dotOn]} />
+        ))}
+      </View>
     </View>
   );
 }
@@ -116,6 +184,8 @@ export default function Home() {
   const showSummary = isAll && !isFiltering;
   const showMembers = (isAll || chip === "members") && members.length > 0;
   const showBusinesses = chip === "businesses" && members.length > 0;
+  const { posted } = useQuestions();
+  const latestQuestions = searchQuestions({ query: "", categories: [], sort: "latest", type: "all" }, posted).slice(0, 2);
   const showOpps = (isAll || chip === "opportunities") && opportunities.length > 0;
   const showEvents = (isAll || chip === "events") && events.length > 0;
   const hasResults = showSummary || showMembers || showBusinesses || showOpps || showEvents;
@@ -170,35 +240,7 @@ export default function Home() {
       <TabHeader onAvatarPress={() => router.push("/business-card")} />
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: 6, paddingBottom: 24 }]} showsVerticalScrollIndicator={false}>
         {/* Hero */}
-        <View style={styles.hero}>
-          <Image source={require("../../../assets/images/hero-bg.png")} style={styles.heroImage} resizeMode="cover" />
-          <LinearGradient
-            colors={[Colors.white, Colors.white, "rgba(255,255,255,0.8)", "rgba(255,255,255,0)"]}
-            locations={[0, 0.3, 0.5, 0.68]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={StyleSheet.absoluteFill}
-          />
-          <Text style={styles.heroTitle}>Connect{"\n"}Collaborate{"\n"}Grow Together</Text>
-          <Text style={styles.heroSub}>A trusted network of business leaders, opportunities and expertise.</Text>
-          <Pressable style={({ pressed }) => pressed && styles.pressed}>
-            <LinearGradient
-              colors={[Colors.goldLight, Colors.champagne, Colors.gold]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.heroBtn}
-            >
-              <Text style={styles.heroBtnText}>Explore Network</Text>
-              <Ionicons name="arrow-forward" size={16} color={Colors.navy} />
-            </LinearGradient>
-          </Pressable>
-          <View style={styles.dots}>
-            <View style={styles.dot} />
-            <View style={styles.dot} />
-            <View style={styles.dot} />
-            <View style={[styles.dot, styles.dotOn]} />
-          </View>
-        </View>
+        <HeroSlider />
 
         {/* Search */}
         <View style={styles.searchRow}>
@@ -343,9 +385,9 @@ export default function Home() {
           <View style={{ gap: 12 }}>
             {showOpps ? (
               <View style={{ gap: 12 }}>
-                <SectionHeader title={isAll && !isFiltering ? "Latest Opportunities" : "Opportunities"} />
+                <SectionHeader title={isAll && !isFiltering ? "Latest Opportunities" : "Opportunities"} onAction={() => router.navigate("/opportunities")} />
                 {opportunities.map((o) => (
-                  <View key={o.title} style={styles.card}>
+                  <Pressable key={o.title} style={styles.card} onPress={() => router.push({ pathname: "/opportunity-details", params: { id: o.id } })} accessibilityRole="button" accessibilityLabel={`Open ${o.title}`}>
                     <View style={styles.cardTop}>
                       <View style={[styles.cardIcon, { backgroundColor: GOLD_BG }]}>
                         <Ionicons name="briefcase" size={22} color={Colors.gold} />
@@ -368,7 +410,7 @@ export default function Home() {
                         <Tag key={t}>{t}</Tag>
                       ))}
                     </View>
-                  </View>
+                  </Pressable>
                 ))}
               </View>
             ) : null}
@@ -423,10 +465,20 @@ export default function Home() {
           </View>
         ) : null}
 
+        {/* Latest questions */}
+        {showSummary ? (
+          <View style={{ gap: 12 }}>
+            <SectionHeader title="Latest Questions" onAction={() => router.push("/ask-network")} />
+            {latestQuestions.map((q) => (
+              <QuestionCard key={q.id} q={q} />
+            ))}
+          </View>
+        ) : null}
+
         {/* Ask network + privileges */}
         {showSummary ? (
         <View style={styles.twoCol}>
-          <View style={[styles.col, styles.promo]}>
+          <Pressable style={[styles.col, styles.promo]} onPress={() => router.push("/ask-network")} accessibilityRole="button" accessibilityLabel="Open Ask Network">
             <View style={styles.promoTop}>
               <View style={[styles.promoIcon, { backgroundColor: PURPLE_BG }]}>
                 <Ionicons name="chatbubble-ellipses-outline" size={26} color={PURPLE} />
@@ -441,11 +493,18 @@ export default function Home() {
                 <Text style={styles.promoDesc}>Get advice, insights and solutions from the ABLN community.</Text>
               </View>
             </View>
-            <Pressable style={({ pressed }) => [styles.promoBtn, { backgroundColor: PURPLE_BG }, pressed && styles.pressed]}>
+            <Pressable
+              style={({ pressed }) => [styles.promoBtn, { backgroundColor: PURPLE_BG }, pressed && styles.pressed]}
+              onPress={() => {
+                resetDraft();
+                router.push("/ask-question");
+              }}
+              accessibilityRole="button"
+            >
               <Text style={[styles.promoBtnText, { color: PURPLE }]}>Ask a Question</Text>
               <Ionicons name="arrow-forward" size={14} color={PURPLE} />
             </Pressable>
-          </View>
+          </Pressable>
 
           <View style={[styles.col, styles.promo]}>
             <View style={styles.promoTop}>
@@ -485,20 +544,11 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 16, gap: 14 },
   bleed: { marginHorizontal: -16 },
 
-  hero: {
-    borderRadius: Radius.lg,
-    padding: 18,
-    paddingBottom: 34,
-    gap: 8,
-    overflow: "hidden",
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderColor: "#EEF1F5",
-  },
-  // Anchored bottom-right and slightly oversized so the people on the right of the photo stay visible.
-  heroImage: { position: "absolute", right: 0, bottom: 0, height: "200%", aspectRatio: 1672 / 941 },
-  heroTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 16, lineHeight: 20 },
-  heroSub: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 12, lineHeight: 18, maxWidth: "72%" },
+  hero: { borderRadius: Radius.lg, overflow: "hidden", backgroundColor: Colors.white },
+  heroImage: { width: "100%", height: "100%" },
+  dots: { flexDirection: "row", justifyContent: "center", gap: 6 },
+  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#D5D8E6" },
+  dotOn: { width: 20, backgroundColor: Colors.gold },
   heroBtn: {
     alignSelf: "flex-start",
     flexDirection: "row",
@@ -510,9 +560,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   heroBtnText: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 12 },
-  dots: { position: "absolute", bottom: 12, right: 14, flexDirection: "row", gap: 6 },
-  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.85)" },
-  dotOn: { width: 20, backgroundColor: Colors.gold },
 
   searchRow: { flexDirection: "row", gap: 10 },
   search: {

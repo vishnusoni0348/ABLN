@@ -126,6 +126,19 @@ export default function Network() {
             style={styles.moreRow}
             onPress={() => {
               setMoreOpen(false);
+              router.push("/ask-network");
+            }}
+          >
+            <View style={styles.moreIcon}>
+              <Ionicons name="help-circle-outline" size={20} color={Colors.goldDark} />
+            </View>
+            <Text style={styles.moreLabel}>Ask Network</Text>
+            <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+          </Pressable>
+          <Pressable
+            style={styles.moreRow}
+            onPress={() => {
+              setMoreOpen(false);
               router.push("/my-connections");
             }}
           >
@@ -151,7 +164,12 @@ export default function Network() {
         </View>
       </Modal>
       <TabHeader
-        extraActions={<HeaderIconButton icon="people-circle-outline" size={24} onPress={() => router.push("/my-introductions")} label="My introduction requests" />}
+        extraActions={
+          <>
+            <HeaderIconButton icon="bulb-outline" size={22} onPress={() => router.push("/my-advice")} label="My advice requests" />
+            <HeaderIconButton icon="people-circle-outline" size={24} onPress={() => router.push("/my-introductions")} label="My introduction requests" />
+          </>
+        }
       />
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: 6, paddingBottom: 24 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Hero */}

@@ -191,6 +191,22 @@ export const OPPORTUNITIES: Opportunity[] = [
     about: "Last-mile logistics partnership for a growing e-commerce brand across metro cities.",
     interested: 24,
   },
+  {
+    id: "o10",
+    title: "Looking for Technology Partners for Expansion",
+    category: "Partnership",
+    industry: "Technology",
+    location: "India (Multiple Cities)",
+    valueLabel: "₹50L – 2 Cr",
+    minL: 50,
+    maxL: 200,
+    deadline: "2026-12-31",
+    deadlineLabel: "31 Dec 2026",
+    status: "Open",
+    postedBy: "ABLN Members",
+    postedDaysAgo: 3,
+    about: "Seeking technology partners to expand our business across multiple cities in India through joint solutions and shared go-to-market.",
+  },
 ];
 
 export type Filters = {

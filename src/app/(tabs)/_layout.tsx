@@ -13,7 +13,7 @@ const TABS: { key: string; route?: string; icon: IconName; iconOn: IconName; lab
   { key: "home", route: "home", icon: "home-outline", iconOn: "home", label: "Home" },
   { key: "network", route: "network", icon: "people-outline", iconOn: "people", label: "Network" },
   { key: "opportunities", route: "opportunities", icon: "briefcase-outline", iconOn: "briefcase", label: "Opportunities" },
-  { key: "events", icon: "calendar-outline", iconOn: "calendar", label: "Events" },
+  { key: "events", route: "events", icon: "calendar-outline", iconOn: "calendar", label: "Events" },
   { key: "messages", icon: "chatbox-ellipses-outline", iconOn: "chatbox-ellipses", label: "Messages", badge: true },
   { key: "more", icon: "grid-outline", iconOn: "grid", label: "More" },
 ];
@@ -53,6 +53,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="home" />
       <Tabs.Screen name="network" />
       <Tabs.Screen name="opportunities" />
+      <Tabs.Screen name="events" />
     </Tabs>
   );
 }

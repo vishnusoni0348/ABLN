@@ -2,9 +2,10 @@ import { WideBtn } from "@/components/ask-ui";
 import { PersonAvatar } from "@/components/intro-ui";
 import { ScreenHeader } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
+import { EXPERT_NAMES } from "@/data/answers";
 import { findMember, type Member } from "@/data/members";
-import { QCATEGORIES } from "@/data/questions";
-import { setDraft, useQuestions } from "@/lib/question-store";
+import { MAX_CATEGORIES, QCATEGORIES } from "@/data/questions";
+import { setDraft, toggleDraftCategory, useQuestions } from "@/lib/question-store";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -12,7 +13,6 @@ import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const EXPERT_NAMES = ["Rahul Agarwal", "Priya Mittal", "Amit Goyal", "Sneha Bansal"];
 const EXPERTS = EXPERT_NAMES.map((n) => findMember(n)).filter((m): m is Member => !!m);
 
 export default function AskCategory() {
@@ -32,12 +32,12 @@ export default function AskCategory() {
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Text style={styles.h}>Select a Category</Text>
-        <Text style={styles.sub}>Choose the most relevant category for your question.</Text>
+        <Text style={styles.sub}>Choose up to {MAX_CATEGORIES} relevant categories for your question.</Text>
         <View style={styles.grid}>
           {QCATEGORIES.map((c) => {
-            const on = draft.category === c.key;
+            const on = draft.categories.includes(c.key);
             return (
-              <Pressable key={c.key} onPress={() => setDraft({ category: c.key })} style={[styles.cat, on && styles.catOn]} accessibilityRole="radio" accessibilityState={{ selected: on }}>
+              <Pressable key={c.key} onPress={() => toggleDraftCategory(c.key)} style={[styles.cat, on && styles.catOn]} accessibilityRole="checkbox" accessibilityState={{ checked: on }}>
                 {on ? (
                   <View style={styles.tick}>
                     <Ionicons name="checkmark" size={11} color={Colors.white} />
@@ -87,7 +87,7 @@ export default function AskCategory() {
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
         <WideBtn label="Back" icon="arrow-back" outline onPress={() => router.back()} />
-        <WideBtn label="Continue" icon="arrow-forward" trailing disabled={!draft.category} onPress={() => router.push("/ask-review")} />
+        <WideBtn label="Continue" icon="arrow-forward" trailing disabled={!draft.categories.length} onPress={() => router.push("/ask-review")} />
       </View>
     </View>
   );

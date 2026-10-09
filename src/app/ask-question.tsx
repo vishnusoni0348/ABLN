@@ -1,8 +1,8 @@
 import { WideBtn } from "@/components/ask-ui";
 import { ScreenHeader } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
-import { QCATEGORIES } from "@/data/questions";
-import { setDraft, useQuestions } from "@/lib/question-store";
+import { MAX_CATEGORIES, QCATEGORIES } from "@/data/questions";
+import { setDraft, toggleDraftCategory, useQuestions } from "@/lib/question-store";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -20,7 +20,7 @@ export default function AskQuestion() {
   const [tag, setTag] = useState("");
   const [pick, setPick] = useState(false);
 
-  const valid = draft.title.trim().length > 0 && draft.body.trim().length > 0 && !!draft.category;
+  const valid = draft.title.trim().length > 0 && draft.body.trim().length > 0 && draft.categories.length > 0;
   const addTag = () => {
     const t = tag.trim();
     if (t && draft.tags.length < MAX_TAGS && !draft.tags.some((x) => x.toLowerCase() === t.toLowerCase())) setDraft({ tags: [...draft.tags, t] });
@@ -38,23 +38,25 @@ export default function AskQuestion() {
         <Pressable style={styles.backdrop} onPress={() => setPick(false)} />
         <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
           <View style={styles.handle} />
-          <Text style={styles.sheetTitle}>Select category</Text>
+          <Text style={styles.sheetTitle}>Select up to {MAX_CATEGORIES} categories</Text>
           <ScrollView showsVerticalScrollIndicator={false}>
             {QCATEGORIES.map((c) => (
               <Pressable
                 key={c.key}
                 style={styles.option}
-                onPress={() => {
-                  setDraft({ category: c.key });
-                  setPick(false);
-                }}
+                onPress={() => toggleDraftCategory(c.key)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: draft.categories.includes(c.key) }}
               >
                 <Ionicons name={c.icon} size={20} color="#2F6FDE" />
-                <Text style={[styles.optionText, draft.category === c.key && { fontFamily: Fonts.bold }]}>{c.key}</Text>
-                {draft.category === c.key ? <Ionicons name="checkmark" size={18} color={Colors.goldDark} /> : null}
+                <Text style={[styles.optionText, draft.categories.includes(c.key) && { fontFamily: Fonts.bold }]}>{c.key}</Text>
+                {draft.categories.includes(c.key) ? <Ionicons name="checkmark" size={18} color={Colors.goldDark} /> : null}
               </Pressable>
             ))}
           </ScrollView>
+          <View style={styles.done}>
+            <WideBtn label="Done" onPress={() => setPick(false)} />
+          </View>
         </View>
       </Modal>
 
@@ -95,11 +97,11 @@ export default function AskQuestion() {
         </View>
 
         <Text style={styles.label}>
-          Category <Text style={styles.req}>*</Text>
+          Categories <Text style={styles.opt}>(up to {MAX_CATEGORIES})</Text> <Text style={styles.req}>*</Text>
         </Text>
         <Pressable style={[styles.box, styles.select]} onPress={() => setPick(true)} accessibilityRole="button" accessibilityLabel="Select category">
           <Ionicons name="pricetag-outline" size={18} color={Colors.navy} />
-          <Text style={[styles.selectText, !draft.category && { color: Colors.textMuted }]}>{draft.category ?? "Select category"}</Text>
+          <Text style={[styles.selectText, !draft.categories.length && { color: Colors.textMuted }]} numberOfLines={1}>{draft.categories.length ? draft.categories.join(", ") : "Select category"}</Text>
           <Ionicons name="chevron-down" size={18} color={Colors.navy} />
         </Pressable>
 
@@ -174,6 +176,7 @@ const styles = StyleSheet.create({
   sheet: { position: "absolute", left: 0, right: 0, bottom: 0, maxHeight: "70%", backgroundColor: Colors.white, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 16, paddingTop: 10 },
   handle: { alignSelf: "center", width: 40, height: 4, borderRadius: 2, backgroundColor: Colors.border, marginBottom: 12 },
   sheetTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 16, marginBottom: 6 },
+  done: { flexDirection: "row", marginTop: 12 },
   option: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: "#EEF1F5" },
   optionText: { flex: 1, color: Colors.navy, fontFamily: Fonts.regular, fontSize: 14 },
 });

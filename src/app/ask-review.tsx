@@ -34,7 +34,6 @@ function Block({ title, optional, onEdit, children }: { title: string; optional?
 export default function AskReview() {
   const insets = useSafeAreaInsets();
   const { draft: d } = useQuestions();
-  const cat = QCATEGORIES.find((c) => c.key === d.category);
   const expert = findMember(d.expert);
 
   const editing = !!d.editingId;
@@ -58,10 +57,14 @@ export default function AskReview() {
           <Block title="Description" onEdit={() => router.dismissTo("/ask-question")}>
             <Text style={styles.value}>{d.body}</Text>
           </Block>
-          <Block title="Category" onEdit={() => router.back()}>
-            <View style={styles.catPill}>
-              <Ionicons name={cat?.icon ?? "ellipsis-horizontal"} size={16} color={Colors.goldDark} />
-              <Text style={styles.catText}>{d.category}</Text>
+          <Block title={d.categories.length > 1 ? "Categories" : "Category"} onEdit={() => router.back()}>
+            <View style={styles.tags}>
+              {d.categories.map((c) => (
+                <View key={c} style={styles.catPill}>
+                  <Ionicons name={QCATEGORIES.find((x) => x.key === c)?.icon ?? "ellipsis-horizontal"} size={16} color={Colors.goldDark} />
+                  <Text style={styles.catText}>{c}</Text>
+                </View>
+              ))}
             </View>
           </Block>
           {d.tags.length ? (

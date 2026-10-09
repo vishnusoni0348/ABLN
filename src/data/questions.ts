@@ -39,6 +39,7 @@ export type Question = {
   title: string;
   tags: string[];
   category: QCategory;
+  categories?: QCategory[]; // extra categories when a question spans several
   answers: number;
   helpful: number;
   body?: string;
@@ -75,6 +76,8 @@ export const QUESTIONS: Question[] = Array.from({ length: 36 }, (_, i) => {
 });
 
 export const PAGE = 10;
+export const MAX_CATEGORIES = 3;
+export const catsOf = (q: Pick<Question, "category" | "categories">) => q.categories ?? [q.category];
 
 export function timeAgo(h: number) {
   if (h < 1) return "Just now";
@@ -92,8 +95,8 @@ export function searchQuestions(f: QFilters, extra: Question[] = []): Question[]
   const q = f.query.trim().toLowerCase();
   const list = [...extra, ...QUESTIONS].filter(
     (x) =>
-      (!q || [x.title, x.author, x.category, ...x.tags].join(" ").toLowerCase().includes(q)) &&
-      (!f.categories.length || f.categories.includes(x.category)) &&
+      (!q || [x.title, x.author, ...catsOf(x), ...x.tags].join(" ").toLowerCase().includes(q)) &&
+      (!f.categories.length || catsOf(x).some((c) => f.categories.includes(c))) &&
       (f.type === "all" || (f.type === "unanswered" ? x.answers === 0 : !!x.expert)),
   );
   const by: Record<QSort, (a: Question, b: Question) => number> = {

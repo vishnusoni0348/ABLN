@@ -62,7 +62,8 @@ export function SearchField({ value, onChange, onSubmit, onFilter, filterCount =
 }
 
 export function QuestionCard({ q }: { q: Question }) {
-  const { saved, helpful, posted } = useQuestions();
+  const { saved, helpful, posted, answers } = useQuestions();
+  const answerCount = q.answers + answers.filter((a) => a.qid === q.id).length;
   const mine = posted.some((p) => p.id === q.id);
   const isSaved = saved.includes(q.id);
   const isHelpful = helpful.includes(q.id);
@@ -92,7 +93,7 @@ export function QuestionCard({ q }: { q: Question }) {
   const menu = () => setMenuOpen(true);
 
   return (
-    <View style={styles.card}>
+    <Pressable style={styles.card} onPress={() => router.push({ pathname: "/question-detail", params: { id: q.id } })} accessibilityRole="button" accessibilityLabel={q.title}>
       <Modal visible={menuOpen} transparent animationType="slide" onRequestClose={close}>
         <Pressable style={styles.backdrop} onPress={close} />
         <View style={styles.sheet}>
@@ -145,10 +146,10 @@ export function QuestionCard({ q }: { q: Question }) {
         ))}
       </View>
       <View style={styles.foot}>
-        <View style={styles.stat}>
+        <Pressable style={styles.stat} onPress={() => router.push({ pathname: "/question-answers", params: { id: q.id } })} hitSlop={8} accessibilityRole="button">
           <Ionicons name="chatbubble-ellipses-outline" size={17} color="#2F6FDE" />
-          <Text style={styles.statText}>{q.answers} Answers</Text>
-        </View>
+          <Text style={styles.statText}>{answerCount} Answers</Text>
+        </Pressable>
         <Pressable style={styles.stat} onPress={() => toggleHelpfulQ(q.id)} hitSlop={8} accessibilityRole="button" accessibilityState={{ selected: isHelpful }}>
           <Ionicons name={isHelpful ? "thumbs-up" : "thumbs-up-outline"} size={17} color={Colors.goldDark} />
           <Text style={styles.statText}>{q.helpful + (isHelpful ? 1 : 0)} Helpful</Text>
@@ -158,7 +159,7 @@ export function QuestionCard({ q }: { q: Question }) {
           <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={19} color={isSaved ? Colors.goldDark : Colors.textSecondary} />
         </Pressable>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

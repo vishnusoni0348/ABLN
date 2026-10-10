@@ -23,8 +23,8 @@ export default function RootLayout() {
 
   if (!loaded) return null;
 
-  // Dark full-bleed screens (splash/welcome) keep a transparent status bar.
-  const showStatusBarBg = pathname !== "/" && pathname !== "/welcome";
+  // Full-bleed screens (splash/welcome, event hero) keep a transparent status bar.
+  const showStatusBarBg = pathname !== "/" && pathname !== "/welcome" && !pathname.startsWith("/event-details") && !pathname.startsWith("/partner-details");
 
   return (
     <>

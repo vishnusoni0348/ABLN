@@ -9,7 +9,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ComponentProps, useState } from "react";
-import { Image, ImageSourcePropType, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image } from "expo-image";
+import { ImageSourcePropType, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -174,10 +175,10 @@ export default function Network() {
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: 6, paddingBottom: 24 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Hero */}
         <View style={styles.hero}>
-          <Image source={require("../../../assets/images/network-hero-banner.jpg")} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          <Image source={require("../../../assets/images/network-hero-banner.jpg")} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="right center" />
           <LinearGradient
-            colors={[Colors.white, "rgba(255,255,255,0.85)", "rgba(255,255,255,0)"]}
-            locations={[0.15, 0.35, 0.6]}
+            colors={[Colors.white, "rgba(255,255,255,0.92)", "rgba(255,255,255,0)"]}
+            locations={[0.3, 0.42, 0.58]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={StyleSheet.absoluteFill}
@@ -381,9 +382,9 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 16, gap: 14 },
   bleed: { marginHorizontal: -16, flexGrow: 0 },
 
-  hero: { aspectRatio: HERO_RATIO, justifyContent: "center", gap: 6, overflow: "hidden", borderRadius: Radius.lg, paddingLeft: 4 },
-  heroTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 32, lineHeight: 38 },
-  heroSub: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 14, lineHeight: 20, maxWidth: "62%" },
+  hero: { aspectRatio: HERO_RATIO, justifyContent: "center", gap: 6, overflow: "hidden", borderRadius: Radius.lg, paddingLeft: 16 },
+  heroTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 24, lineHeight: 30 },
+  heroSub: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 14, lineHeight: 20, maxWidth: "52%" },
 
   searchRow: { flexDirection: "row", gap: 10 },
   search: {

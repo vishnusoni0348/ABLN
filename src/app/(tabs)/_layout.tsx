@@ -8,19 +8,22 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 type BottomTabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>["tabBar"]>>[0];
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
-// `route` is the screen under (tabs)/; tabs without one are placeholders until their screens exist.
+// `route` is the screen under (tabs)/; sub-screens listed in MEMBERSHIP_SCREENS are hidden tabs that keep the tab bar and highlight Membership.
 const TABS: { key: string; route?: string; icon: IconName; iconOn: IconName; label: string; badge?: boolean }[] = [
   { key: "home", route: "home", icon: "home-outline", iconOn: "home", label: "Home" },
   { key: "network", route: "network", icon: "people-outline", iconOn: "people", label: "Network" },
   { key: "opportunities", route: "opportunities", icon: "briefcase-outline", iconOn: "briefcase", label: "Opportunities" },
   { key: "events", route: "events", icon: "calendar-outline", iconOn: "calendar", label: "Events" },
-  { key: "messages", icon: "chatbox-ellipses-outline", iconOn: "chatbox-ellipses", label: "Messages", badge: true },
-  { key: "more", icon: "grid-outline", iconOn: "grid", label: "More" },
+  { key: "partners", route: "partners", icon: "ribbon-outline", iconOn: "ribbon", label: "Partners" },
+  { key: "membership", route: "membership", icon: "shield-checkmark-outline", iconOn: "shield-checkmark", label: "Membership" },
 ];
+
+const MEMBERSHIP_SCREENS = ["choose-plan", "compare-plans", "membership-status", "renew-membership"];
 
 function TabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const activeRoute = state.routes[state.index].name;
+  const highlighted = MEMBERSHIP_SCREENS.includes(activeRoute) ? "membership" : activeRoute;
 
   const onPress = (route?: string) => {
     if (route && route !== activeRoute) navigation.navigate(route);
@@ -29,7 +32,7 @@ function TabBar({ state, navigation }: BottomTabBarProps) {
   return (
     <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
       {TABS.map((t) => {
-        const on = t.route === activeRoute;
+        const on = t.route === highlighted;
         return (
           <Pressable key={t.key} onPress={() => onPress(t.route)} style={styles.tab} accessibilityRole="tab" accessibilityState={{ selected: on }}>
             <View>
@@ -54,6 +57,11 @@ export default function TabsLayout() {
       <Tabs.Screen name="network" />
       <Tabs.Screen name="opportunities" />
       <Tabs.Screen name="events" />
+      <Tabs.Screen name="partners" />
+      <Tabs.Screen name="membership" />
+      {MEMBERSHIP_SCREENS.map((name) => (
+        <Tabs.Screen key={name} name={name} options={{ href: null }} />
+      ))}
     </Tabs>
   );
 }

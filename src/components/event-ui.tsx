@@ -4,8 +4,10 @@ import { Colors, Fonts, Radius } from "@/constants/theme";
 import { type AppEvent, type Availability, type EventCategory, availability, formatEventDate, isRegistrationOpen } from "@/data/events";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { Image as ExpoImage } from "expo-image";
+import { router } from "expo-router";
 import { ComponentProps, useEffect, useState } from "react";
-import { Animated, Image, Modal, Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { Animated, Image, ImageSourcePropType, Modal, Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -27,11 +29,17 @@ const AVATARS = [require("../../assets/images/member-amit.png"), require("../../
 
 const STATUS_COLOR: Record<Availability, string> = { "Seats Available": Colors.success, "Almost Full": "#F08A1C", Full: Colors.error, Closed: Colors.error };
 
-export function EventThumb({ category, style }: { category: EventCategory; style?: StyleProp<ViewStyle> }) {
-  const art = ART[category];
+export const openEvent = (id: string) => router.push({ pathname: "/event-details", params: { id } });
+
+// Real photos by event id; events without one fall back to the category artwork.
+const PHOTOS: Record<string, ImageSourcePropType> = { e1: require("../../assets/images/event-conference.jpg") };
+
+export function EventThumb({ event, style }: { event: Pick<AppEvent, "id" | "category">; style?: StyleProp<ViewStyle> }) {
+  const photo = PHOTOS[event.id];
+  const art = ART[event.category];
   return (
     <LinearGradient colors={art.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.thumb, style]}>
-      <Ionicons name={art.icon} size={36} color="rgba(255,255,255,0.85)" />
+      {photo ? <ExpoImage source={photo} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="center" transition={150} /> : <Ionicons name={art.icon} size={36} color="rgba(255,255,255,0.85)" />}
     </LinearGradient>
   );
 }
@@ -55,7 +63,7 @@ function Meta({ icon, children }: { icon: IconName; children: string }) {
   );
 }
 
-export function GoingRow({ count }: { count: number }) {
+export function GoingRow({ count, light }: { count: number; light?: boolean }) {
   return (
     <View style={styles.going}>
       <View style={styles.avatars}>
@@ -63,18 +71,17 @@ export function GoingRow({ count }: { count: number }) {
           <Image key={i} source={src} style={[styles.avatar, i > 0 && styles.avatarOverlap]} />
         ))}
       </View>
-      <Text style={styles.goingText}>{`${count} going`}</Text>
+      <Text style={[styles.goingText, light && { color: Colors.white }]}>{`${count} going`}</Text>
     </View>
   );
 }
 
-export function GoButton({ onPress, label }: { onPress?: () => void; label: string }) {
+// Visual affordance only: the whole card is the tap target.
+export function GoButton() {
   return (
-    <Pressable onPress={onPress} hitSlop={6} style={({ pressed }) => pressed && styles.pressed} accessibilityRole="button" accessibilityLabel={label}>
-      <LinearGradient colors={GOLD_GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.go}>
-        <Ionicons name="arrow-forward" size={16} color={Colors.white} />
-      </LinearGradient>
-    </Pressable>
+    <LinearGradient colors={GOLD_GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.go}>
+      <Ionicons name="arrow-forward" size={16} color={Colors.white} />
+    </LinearGradient>
   );
 }
 
@@ -112,60 +119,58 @@ const typeBadges = (e: AppEvent) => (
   </View>
 );
 
-// Large card for the listing's "Featured Event".
+function CardInfo({ e }: { e: AppEvent }) {
+  return (
+    <>
+      {typeBadges(e)}
+      <Text style={styles.title} numberOfLines={2}>
+        {e.title}
+      </Text>
+      <Meta icon="calendar-outline">{formatEventDate(e.date)}</Meta>
+      <Meta icon="time-outline">{e.time}</Meta>
+      <Meta icon="location-outline">{e.location}</Meta>
+    </>
+  );
+}
+
+// Large card for the listing's "Featured Event": full-width photo banner on top, details below.
 export function FeaturedEventCard({ e, onPress }: { e: AppEvent; onPress?: () => void }) {
   return (
-    <View style={[styles.card, CARD_SHADOW]}>
-      <View style={styles.row}>
-        <EventThumb category={e.category} style={styles.bigThumb} />
-        <View style={styles.flex}>
-          {typeBadges(e)}
-          <Text style={styles.title} numberOfLines={2}>
-            {e.title}
-          </Text>
-          <Meta icon="calendar-outline">{formatEventDate(e.date)}</Meta>
-          <Meta icon="time-outline">{e.time}</Meta>
-          <Meta icon="location-outline">{e.location}</Meta>
+    <Pressable onPress={onPress ?? (() => openEvent(e.id))} style={({ pressed }) => [styles.card, CARD_SHADOW, pressed && styles.pressed]} accessibilityRole="button" accessibilityLabel={e.title}>
+      <EventThumb event={e} style={styles.bigBanner} />
+      <View style={styles.body}>
+        <CardInfo e={e} />
+        <View style={styles.footer}>
+          <GoingRow count={e.going} />
+          <GoButton />
         </View>
       </View>
-      <View style={styles.footer}>
-        <GoingRow count={e.going} />
-        <GoButton onPress={onPress} label={`View ${e.title}`} />
-      </View>
-    </View>
+    </Pressable>
   );
 }
 
 // Listing card. `capacity` swaps the "going" avatars for the seats progress bar and registration status.
 export function EventCard({ e, capacity, onPress }: { e: AppEvent; capacity?: boolean; onPress?: () => void }) {
   return (
-    <View style={[styles.card, CARD_SHADOW]}>
-      <View style={styles.row}>
-        <EventThumb category={e.category} style={styles.thumbSm} />
-        <View style={styles.flex}>
-          {typeBadges(e)}
-          <Text style={styles.title} numberOfLines={2}>
-            {e.title}
-          </Text>
-          <Meta icon="calendar-outline">{formatEventDate(e.date)}</Meta>
-          <Meta icon="time-outline">{e.time}</Meta>
-          <Meta icon="location-outline">{e.location}</Meta>
+    <Pressable onPress={onPress ?? (() => openEvent(e.id))} style={({ pressed }) => [styles.card, CARD_SHADOW, pressed && styles.pressed]} accessibilityRole="button" accessibilityLabel={e.title}>
+      <EventThumb event={e} style={styles.banner} />
+      <View style={styles.body}>
+        <CardInfo e={e} />
+        <View style={styles.footer}>
+          {capacity ? (
+            <View style={styles.flex}>
+              <CapacityBar e={e} />
+            </View>
+          ) : (
+            <>
+              <GoingRow count={e.going} />
+              <StatusPill e={e} />
+            </>
+          )}
+          <GoButton />
         </View>
       </View>
-      <View style={styles.footer}>
-        {capacity ? (
-          <View style={styles.flex}>
-            <CapacityBar e={e} />
-          </View>
-        ) : (
-          <>
-            <GoingRow count={e.going} />
-            <StatusPill e={e} />
-          </>
-        )}
-        <GoButton onPress={onPress} label={`View ${e.title}`} />
-      </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -278,8 +283,9 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", gap: 12 },
 
   thumb: { alignItems: "center", justifyContent: "center", borderRadius: Radius.md, overflow: "hidden" },
-  bigThumb: { width: 112, height: 130 },
-  thumbSm: { width: 96, height: 112 },
+  bigBanner: { height: 170, borderRadius: 0 },
+  banner: { height: 140, borderRadius: 0 },
+  body: { padding: 12 },
 
   badges: { flexDirection: "row", gap: 6 },
   badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 5, backgroundColor: "#FDF0D2" },
@@ -291,7 +297,7 @@ const styles = StyleSheet.create({
   meta: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 5 },
   metaText: { flex: 1, color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 11 },
 
-  card: { padding: 12, borderRadius: Radius.lg, backgroundColor: Colors.white },
+  card: { borderRadius: Radius.lg, backgroundColor: Colors.white, overflow: "hidden" },
   footer: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 12 },
 
   going: { flexDirection: "row", alignItems: "center", gap: 8 },

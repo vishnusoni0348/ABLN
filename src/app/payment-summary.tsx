@@ -22,9 +22,11 @@ export default function PaymentSummary() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
-  const { plan } = useLocalSearchParams<{ plan?: string }>();
+  const { plan, name, duration, amount } = useLocalSearchParams<{ plan?: string; name?: string; duration?: string; amount?: string }>();
 
-  const selected = PLANS[plan ?? ""] ?? PLANS.regular;
+  // Renewals pass the exact plan being paid for; onboarding only passes the plan key.
+  const fallback = PLANS[plan ?? ""] ?? PLANS.regular;
+  const selected = name && amount && Number(amount) > 0 ? { name, duration: duration ?? fallback.duration, amount: Number(amount) } : fallback;
   const gst = selected.amount * GST_RATE;
   const total = selected.amount + gst;
 

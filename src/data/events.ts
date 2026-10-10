@@ -115,3 +115,55 @@ export function dateRangeLabel(f: Pick<EventFilters, "dateFrom" | "dateTo">) {
   if (!f.dateFrom && !f.dateTo) return "";
   return `${f.dateFrom ? formatEventDate(f.dateFrom) : "Any"} – ${f.dateTo ? formatEventDate(f.dateTo) : "Any"}`;
 }
+
+export type EventDetails = {
+  about: string;
+  agenda: { time: string; title: string }[];
+  speakers: { name: string; role: string }[];
+  organiser: { name: string; about: string };
+  audience: string;
+  dress: string;
+};
+
+// Sample detail content until the events API provides it.
+export function eventDetails(e: AppEvent): EventDetails {
+  return {
+    about:
+      e.id === "e1"
+        ? "Join fellow Agarwal business leaders for a powerful networking session in Jaipur. Connect, collaborate and explore new business opportunities."
+        : `Join the ABLN community for ${e.title}. Meet fellow business leaders, learn from practitioners and explore new partnerships.`,
+    agenda: [
+      { time: "Check-in", title: "Registration & welcome" },
+      { time: "+30 min", title: "Opening address" },
+      { time: "+1 hr", title: `${e.category} session` },
+      { time: "+2 hr", title: "Open networking & Q&A" },
+    ],
+    speakers: [
+      { name: "Rahul Agarwal", role: "CEO & Founder, TechVision" },
+      { name: "Priya Sharma", role: "Director, Growth Partners" },
+      { name: "Amit Jain", role: "Managing Partner, Jain & Co." },
+    ],
+    organiser: { name: "ABLN Events Team", about: "Agarwal Business Leaders Network hosts curated events to connect members across industries." },
+    audience: "Business Owners, Entrepreneurs",
+    dress: e.type === "Online" ? "Not applicable" : "Business Casual",
+  };
+}
+
+// "10:00 AM – 01:00 PM" on an ISO date -> [start, end] Dates; undefined if the time can't be read.
+function parseSlot(date: string, time: string): [Date, Date] | undefined {
+  const m = time.match(/(\d{1,2}):(\d{2})\s*(AM|PM)\s*[–-]\s*(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!m) return undefined;
+  const at = (h: string, min: string, ap: string) => {
+    const d = new Date(`${date}T00:00:00`);
+    d.setHours((Number(h) % 12) + (ap.toUpperCase() === "PM" ? 12 : 0), Number(min));
+    return d;
+  };
+  return [at(m[1], m[2], m[3]), at(m[4], m[5], m[6])];
+}
+
+export function calendarUrl(e: AppEvent) {
+  const slot = parseSlot(e.date, e.time);
+  const fmt = (d: Date) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+  const dates = slot ? `&dates=${fmt(slot[0])}/${fmt(slot[1])}` : "";
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title)}&location=${encodeURIComponent(e.location)}${dates}`;
+}

@@ -3,8 +3,10 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { TabHeader } from "@/components/tab-header";
 import { LinearGradient } from "expo-linear-gradient";
 import { QuestionCard } from "@/components/ask-ui";
+import { openEvent } from "@/components/event-ui";
+import { EVENTS as ALL_EVENTS } from "@/data/events";
 import { searchQuestions } from "@/data/questions";
-import { resetDraft, useQuestions } from "@/lib/question-store";
+import { useQuestions } from "@/lib/question-store";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ComponentProps, ReactNode, useEffect, useRef, useState } from "react";
@@ -52,18 +54,25 @@ const OPPORTUNITIES: { id: string; title: string; location: string; tags: string
   { id: "o10", title: "Looking for Technology Partners for Expansion", location: "India (Multiple Cities)", tags: ["Partnership", "Technology", "Expansion"] },
 ];
 
-const EVENTS: { day: string; month: string; title: string; location: string; time: string; tags: string[] }[] = [
-  { day: "25", month: "JAN", title: "ABLN Business Networking Meet", location: "Jaipur, Rajasthan", time: "10:00 AM - 4:00 PM", tags: ["Networking", "Business Growth"] },
-];
+// The next few upcoming events from the events data, shaped for the home cards.
+const EVENTS = ALL_EVENTS.filter((e) => e.when === "Upcoming")
+  .sort((a, b) => a.date.localeCompare(b.date))
+  .slice(0, 3)
+  .map((e) => {
+    const d = new Date(`${e.date}T00:00:00`);
+    return { id: e.id, day: String(d.getDate()), month: d.toLocaleString("en-US", { month: "short" }).toUpperCase(), title: e.title, location: e.location, time: e.time, tags: [e.category, e.type] };
+  });
 
-function SectionHeader({ title, action = "View All", onAction }: { title: string; action?: string; onAction?: () => void }) {
+function SectionHeader({ title, action = "View All", onAction, hideAction }: { title: string; action?: string; onAction?: () => void; hideAction?: boolean }) {
   return (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      <Pressable hitSlop={8} style={styles.viewAll} onPress={onAction} accessibilityRole="button">
-        <Text style={styles.viewAllText}>{action}</Text>
-        <Ionicons name="arrow-forward" size={14} color={Colors.goldDark} />
-      </Pressable>
+      {hideAction ? null : (
+        <Pressable hitSlop={8} style={styles.viewAll} onPress={onAction} accessibilityRole="button">
+          <Text style={styles.viewAllText}>{action}</Text>
+          <Ionicons name="arrow-forward" size={14} color={Colors.goldDark} />
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -306,7 +315,7 @@ export default function Home() {
         {showSummary ? (
           <>
             {/* Network summary */}
-            <SectionHeader title="Network Summary" action="View Insights" />
+            <SectionHeader title="Network Summary" hideAction />
             <View style={styles.summary}>
               {SUMMARY.map((s) => (
                 <View key={s.key} style={[styles.summaryCard, { backgroundColor: s.bg }]}>
@@ -322,7 +331,7 @@ export default function Home() {
         {/* Recommended connections */}
         {showMembers ? (
           <>
-            <SectionHeader title={isAll && !isFiltering ? "Recommended Connections" : "Members"} />
+            <SectionHeader title={isAll && !isFiltering ? "Recommended Connections" : "Members"} onAction={() => router.navigate("/network")} />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.connections} style={styles.bleed}>
               {members.map((m) => (
                 <Pressable key={m.name} style={styles.connection} onPress={() => router.push({ pathname: "/member-profile", params: { name: m.name } })}>
@@ -417,9 +426,9 @@ export default function Home() {
 
             {showEvents ? (
               <View style={{ gap: 12 }}>
-                <SectionHeader title="Upcoming Events" />
+                <SectionHeader title="Upcoming Events" onAction={() => router.navigate("/events")} />
                 {events.map((e) => (
-                  <View key={e.title} style={styles.card}>
+                  <Pressable key={e.id} onPress={() => openEvent(e.id)} style={({ pressed }) => [styles.card, pressed && { opacity: 0.85 }]} accessibilityRole="button" accessibilityLabel={e.title}>
                     <View style={styles.cardTop}>
                       <View style={styles.date}>
                         <Text style={styles.dateDay}>{e.day}</Text>
@@ -446,7 +455,7 @@ export default function Home() {
                         <Tag key={t}>{t}</Tag>
                       ))}
                     </View>
-                  </View>
+                  </Pressable>
                 ))}
               </View>
             ) : null}
@@ -493,20 +502,13 @@ export default function Home() {
                 <Text style={styles.promoDesc}>Get advice, insights and solutions from the ABLN community.</Text>
               </View>
             </View>
-            <Pressable
-              style={({ pressed }) => [styles.promoBtn, { backgroundColor: PURPLE_BG }, pressed && styles.pressed]}
-              onPress={() => {
-                resetDraft();
-                router.push("/ask-question");
-              }}
-              accessibilityRole="button"
-            >
-              <Text style={[styles.promoBtnText, { color: PURPLE }]}>Ask a Question</Text>
+            <View style={[styles.promoBtn, { backgroundColor: PURPLE_BG }]}>
+              <Text style={[styles.promoBtnText, { color: PURPLE }]}>View Questions</Text>
               <Ionicons name="arrow-forward" size={14} color={PURPLE} />
-            </Pressable>
+            </View>
           </Pressable>
 
-          <View style={[styles.col, styles.promo]}>
+          <Pressable style={({ pressed }) => [styles.col, styles.promo, pressed && styles.pressed]} onPress={() => router.navigate("/partners")} accessibilityRole="button" accessibilityLabel="Open ABLN Privileges">
             <View style={styles.promoTop}>
               <View style={[styles.promoIcon, { backgroundColor: GOLD_BG }]}>
                 <MaterialCommunityIcons name="crown" size={26} color={Colors.gold} />
@@ -516,11 +518,11 @@ export default function Home() {
                 <Text style={styles.promoDesc}>Access exclusive perks, partner discounts and member benefits.</Text>
               </View>
             </View>
-            <Pressable style={({ pressed }) => [styles.promoBtn, { backgroundColor: GOLD_BG }, pressed && styles.pressed]}>
+            <View style={[styles.promoBtn, { backgroundColor: GOLD_BG }]}>
               <Text style={[styles.promoBtnText, { color: Colors.goldDark }]}>Explore Privileges</Text>
               <Ionicons name="arrow-forward" size={14} color={Colors.goldDark} />
-            </Pressable>
-          </View>
+            </View>
+          </Pressable>
         </View>
         ) : null}
       </ScrollView>

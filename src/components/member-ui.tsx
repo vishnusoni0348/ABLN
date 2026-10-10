@@ -87,12 +87,14 @@ export function MemberRow({ member: m, requested, onToggle, card }: { member: Ro
   );
 }
 
-export function ScreenHeader({ title, right }: { title: string; right?: ReactNode }) {
+export function ScreenHeader({ title, right, hideBack }: { title: string; right?: ReactNode; hideBack?: boolean }) {
   return (
     <View style={styles.header}>
-      <Pressable onPress={() => router.back()} hitSlop={12} style={styles.back} accessibilityRole="button" accessibilityLabel="Go back">
-        <Ionicons name="chevron-back" size={24} color={Colors.navy} />
-      </Pressable>
+      {hideBack ? null : (
+        <Pressable onPress={() => router.back()} hitSlop={12} style={styles.back} accessibilityRole="button" accessibilityLabel="Go back">
+          <Ionicons name="chevron-back" size={24} color={Colors.navy} />
+        </Pressable>
+      )}
       <Text style={styles.headerTitle} numberOfLines={1}>
         {title}
       </Text>

@@ -2,7 +2,7 @@ import { Colors, Fonts, Radius } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type State = "done" | "current" | "pending";
@@ -20,14 +20,13 @@ const STEPS: { title: string; desc: string; state: State }[] = [
 export default function ApplicationStatus() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
 
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
       <Image
         source={require("../../assets/images/white-bg.png")}
-        style={[styles.bg, { width, height }]}
+        style={styles.bg}
         resizeMode="cover"
       />
       <ScrollView
@@ -81,7 +80,7 @@ export default function ApplicationStatus() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
-  bg: { position: "absolute", top: 0, left: 0 },
+  bg: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" },
   scroll: { flexGrow: 1, paddingHorizontal: 20 },
   header: { alignItems: "center", justifyContent: "center", paddingVertical: 8 },
   back: { position: "absolute", left: 0 },

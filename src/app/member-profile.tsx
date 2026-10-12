@@ -134,11 +134,7 @@ export default function MemberProfile() {
   const onConnect = () => (isRequested ? cancelRequest() : setSheet(true));
   const report = () => {
     closeSheet();
-    Alert.alert("Report / Block", `What would you like to do with ${member.name}?`, [
-      { text: "Report", onPress: () => Alert.alert("Thanks", "Your report has been submitted.") },
-      { text: "Block", style: "destructive" },
-      { text: "Cancel", style: "cancel" },
-    ]);
+    router.push({ pathname: "/report-block", params: { name: member.name } });
   };
 
   const actions: { icon: IconName; title: string; sub: string; onPress: () => void; danger?: boolean }[] = [

@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function ApplicationSubmitted() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const logoWidth = Math.min(width * 0.62, 260);
 
   return (
@@ -17,7 +17,7 @@ export default function ApplicationSubmitted() {
       <StatusBar style="dark" />
       <Image
         source={require("../../assets/images/white-bg.png")}
-        style={[styles.bg, { width, height }]}
+        style={styles.bg}
         resizeMode="cover"
       />
       <ScrollView
@@ -75,7 +75,7 @@ export default function ApplicationSubmitted() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
-  bg: { position: "absolute", top: 0, left: 0 },
+  bg: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" },
   scroll: { flexGrow: 1, paddingHorizontal: 20 },
   logoWrap: { alignItems: "center" },
   divider: { width: 50, height: 1.5, backgroundColor: Colors.gold, marginTop: 10 },

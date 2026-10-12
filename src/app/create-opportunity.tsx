@@ -2,12 +2,12 @@ import { GOLD_BG, Tag } from "@/components/member-ui";
 import { usePickImage } from "@/components/form-fields";
 import { GOLD_GRADIENT, OppThumb } from "@/components/opportunity-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
-import { CATEGORIES, type Category, OPP_INDUSTRIES, OPP_LOCATIONS, VALUE_RANGES } from "@/data/opportunities";
-import { addMine } from "@/lib/opportunity-store";
+import { CATEGORIES, type Category, type MyOpportunity, OPP_INDUSTRIES, OPP_LOCATIONS, type OppForm, VALUE_RANGES } from "@/data/opportunities";
+import { addMine, updateMine, useOpportunities } from "@/lib/opportunity-store";
 import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ComponentProps, ReactNode, useEffect, useState } from "react";
 import { Image, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
@@ -17,29 +17,12 @@ type IconName = ComponentProps<typeof Ionicons>["name"];
 
 const STEPS = ["Basic\nDetails", "Business\nDetails", "Timeline &\nContact", "Review", "Submit"];
 const TITLES = ["Create Opportunity", "Create Opportunity", "Create Opportunity", "Review Opportunity", ""];
+const EDIT_TITLES = ["Edit Opportunity", "Edit Opportunity", "Edit Opportunity", "Review Changes", ""];
 const CONTACTS = ["Through ABLN Platform", "Email", "Phone", "WhatsApp"];
 const VALUE_OPTIONS = VALUE_RANGES.map((r) => (r.label.startsWith("<") ? "Under ₹10L" : `₹${r.label}`));
 const DATE_RE = /^(\d{2})\/(\d{2})\/(\d{4})$/;
 
-type Form = {
-  title: string;
-  category: string;
-  short: string;
-  detailed: string;
-  location: string;
-  cover: string;
-  industry: string;
-  type: string;
-  value: string;
-  audience: string;
-  requirements: string;
-  tags: string[];
-  deadline: string;
-  start: string;
-  contact: string;
-  extra: string;
-  direct: boolean;
-};
+type Form = OppForm;
 
 const EMPTY: Form = {
   title: "",
@@ -93,6 +76,12 @@ function validate(step: number, f: Form): Partial<Record<keyof Form, string>> {
     else if (d.getTime() < new Date().setHours(0, 0, 0, 0)) e.deadline = "Deadline must be in the future";
   }
   return e;
+}
+
+// Prefills the form: the full saved details when present, otherwise what the list card knows.
+function formFrom(o: MyOpportunity): Form {
+  if (o.form) return o.form;
+  return { ...EMPTY, title: o.title, category: o.category, type: o.category, industry: o.industry, location: o.location, value: o.valueLabel, cover: o.cover ?? "" };
 }
 
 function Stepper({ step }: { step: number }) {
@@ -290,8 +279,11 @@ const TIMELINE: { title: string; text: string }[] = [
 
 export default function CreateOpportunity() {
   const insets = useSafeAreaInsets();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { mine } = useOpportunities();
+  const editing = id ? mine.find((m) => m.id === id) : undefined;
   const [step, setStep] = useState(0);
-  const [f, setF] = useState<Form>(EMPTY);
+  const [f, setF] = useState<Form>(() => (editing ? formFrom(editing) : EMPTY));
   const [showErrors, setShowErrors] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [submittedAt, setSubmittedAt] = useState("");
@@ -327,6 +319,19 @@ export default function CreateOpportunity() {
 
   const submit = () => {
     const now = new Date();
+    if (editing) {
+      updateMine(editing.id, {
+        title: f.title.trim(),
+        category: f.type as Category,
+        industry: f.industry,
+        location: f.location,
+        valueLabel: f.value,
+        cover: f.cover || undefined,
+        form: f,
+      });
+      setSubmittedAt(fmt(now, true));
+      return setStep(4);
+    }
     addMine({
       id: `m${now.getTime()}`,
       title: f.title.trim(),
@@ -337,6 +342,7 @@ export default function CreateOpportunity() {
       postedLabel: fmt(now),
       cover: f.cover || undefined,
       status: "Pending",
+      form: f,
     });
     setSubmittedAt(fmt(now, true));
     setStep(4);
@@ -364,9 +370,11 @@ export default function CreateOpportunity() {
             <Text style={styles.primaryText}>View My Opportunities</Text>
           </LinearGradient>
         </Pressable>
-        <Pressable onPress={reset} style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}>
-          <Text style={styles.secondaryText}>Create Another Opportunity</Text>
-        </Pressable>
+        {editing ? null : (
+          <Pressable onPress={reset} style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}>
+            <Text style={styles.secondaryText}>Create Another Opportunity</Text>
+          </Pressable>
+        )}
       </View>
     ) : step === 0 ? (
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
@@ -385,7 +393,7 @@ export default function CreateOpportunity() {
         </Pressable>
         <Pressable onPress={step === 3 ? submit : next} style={({ pressed }) => [styles.flex, pressed && styles.pressed]}>
           <LinearGradient colors={GOLD_GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.primary}>
-            <Text style={styles.primaryText}>{step === 3 ? "Submit Opportunity" : "Next"}</Text>
+            <Text style={styles.primaryText}>{step === 3 ? (editing ? "Save Changes" : "Submit Opportunity") : "Next"}</Text>
             {step === 3 ? null : <Ionicons name="arrow-forward" size={18} color={Colors.white} />}
           </LinearGradient>
         </Pressable>
@@ -403,7 +411,7 @@ export default function CreateOpportunity() {
         ) : (
           <View style={{ width: 24 }} />
         )}
-        <Text style={styles.topTitle}>{TITLES[step]}</Text>
+        <Text style={styles.topTitle}>{(editing ? EDIT_TITLES : TITLES)[step]}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -459,7 +467,7 @@ export default function CreateOpportunity() {
               <Chips options={[...CATEGORIES]} selected={f.type} onSelect={(v) => set("type", v)} />
             </Group>
             <Group label="Value Range" required error={errors.value}>
-              <Dropdown value={f.value} placeholder="Select value range" options={VALUE_OPTIONS} onChange={(v) => set("value", v)} icon="cash-outline" error={errors.value} />
+              <Dropdown value={f.value} placeholder="Select value range" options={VALUE_OPTIONS.includes(f.value) || !f.value ? VALUE_OPTIONS : [f.value, ...VALUE_OPTIONS]} onChange={(v) => set("value", v)} icon="cash-outline" error={errors.value} />
             </Group>
             <Group label="Target Audience">
               <Input value={f.audience} onChangeText={(v) => set("audience", v)} placeholder="E.g., Distributors, Investors, Technology Partners" />
@@ -605,9 +613,11 @@ export default function CreateOpportunity() {
                 <Ionicons name="checkmark" size={30} color={Colors.white} />
               </View>
             </View>
-            <Text style={styles.successTitle}>Opportunity Submitted Successfully!</Text>
-            <Text style={styles.successSub}>Your opportunity has been submitted and is under review.</Text>
+            <Text style={styles.successTitle}>{editing ? "Changes Saved!" : "Opportunity Submitted Successfully!"}</Text>
+            <Text style={styles.successSub}>{editing ? "Your opportunity has been updated." : "Your opportunity has been submitted and is under review."}</Text>
 
+            {editing ? null : (
+            <>
             <View style={styles.reviewBox}>
               <Ionicons name="hourglass-outline" size={30} color={Colors.goldDark} />
               <View style={styles.flex}>
@@ -636,6 +646,8 @@ export default function CreateOpportunity() {
                 );
               })}
             </View>
+            </>
+            )}
           </View>
         ) : null}
       </ScrollView>

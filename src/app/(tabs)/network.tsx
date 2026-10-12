@@ -38,6 +38,7 @@ const MORE: { key: string; label: string; icon: IconName; query?: string; sort?:
 
 // network-hero-banner.jpg is the middle band of network-hero.png (head and shoulders plus the crowd), pre-cropped to 3.3:1.
 const HERO_RATIO = 3.3;
+const BUSINESS_PREVIEW = 4;
 
 const RECOMMENDED: Member[] = [
   { name: "Rahul Agarwal", role: "CEO", company: "TechVision Pvt Ltd", tags: ["Technology", "AI"], photo: require("../../../assets/images/member-rahul.png") },
@@ -61,14 +62,16 @@ const RECENT: Joined[] = [
   { name: "Ritika Jain", role: "Co-Founder", company: "MediCare Plus", location: "Bangalore, India", tags: ["Healthcare", "HealthTech"] },
 ];
 
-function SectionHeader({ title, onPress }: { title: string; onPress?: () => void }) {
+function SectionHeader({ title, onPress, hideAction }: { title: string; onPress?: () => void; hideAction?: boolean }) {
   return (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      <Pressable hitSlop={8} style={styles.viewAll} onPress={onPress}>
-        <Text style={styles.viewAllText}>View All</Text>
-        <Ionicons name="arrow-forward" size={14} color={Colors.goldDark} />
-      </Pressable>
+      {hideAction ? null : (
+        <Pressable hitSlop={8} style={styles.viewAll} onPress={onPress}>
+          <Text style={styles.viewAllText}>View All</Text>
+          <Ionicons name="arrow-forward" size={14} color={Colors.goldDark} />
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -84,6 +87,11 @@ export default function Network() {
   // Hands a search over to the Search Results screen.
   const openResults = (term: string) => {
     setDirectory({ query: term, filters: EMPTY_FILTERS });
+    router.navigate("/search-results");
+  };
+  // Business accounts have no screen of their own; they are the Business member type in the directory.
+  const openBusinesses = () => {
+    setDirectory({ query: "", filters: { ...EMPTY_FILTERS, memberType: "Business" }, sort: "relevance" });
     router.navigate("/search-results");
   };
   const openMore = (m: (typeof MORE)[number]) => {
@@ -103,7 +111,9 @@ export default function Network() {
   const showIndustries = (isAll || chip === "industries") && industries.length > 0;
   const showRecent = (isAll || chip === "members") && recent.length > 0;
   const showBusinesses = chip === "businesses";
-  const businesses = [...RECOMMENDED, ...RECENT].filter((m) => hit(m.company, m.name, ...m.tags));
+  const allBusinesses = [...RECOMMENDED, ...RECENT].filter((m) => hit(m.company, m.name, ...m.tags));
+  // The tab previews a few; View All opens the full Business directory.
+  const businesses = allBusinesses.slice(0, BUSINESS_PREVIEW);
   const hasResults = showRecommended || showIndustries || showRecent || (showBusinesses && businesses.length > 0);
 
   return (
@@ -320,7 +330,7 @@ export default function Network() {
         {/* Businesses */}
         {showBusinesses && businesses.length > 0 ? (
           <>
-            <SectionHeader title="Businesses" />
+            <SectionHeader title="Businesses" onPress={openBusinesses} hideAction={allBusinesses.length <= BUSINESS_PREVIEW} />
             <View style={styles.list}>
               {businesses.map((m) => (
                 <Pressable key={m.company} style={styles.row} onPress={() => router.push({ pathname: "/member-profile", params: { name: m.name } })}>

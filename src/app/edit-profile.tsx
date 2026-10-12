@@ -1,0 +1,163 @@
+import { Field, MultiSelect, Select, usePickImage } from "@/components/form-fields";
+import { Avatar } from "@/components/member-ui";
+import { DateBox, PhoneBox, PickBox, TextBox } from "@/components/profile-fields";
+import { GoldButton, SegmentTabs, SettingsScreen } from "@/components/settings-ui";
+import { Colors, Fonts, Radius } from "@/constants/theme";
+import { BUSINESS_TYPES, CAN_OFFER, CITIES, COUNTRIES, EXPERTISE, INDIAN_CITIES, INDUSTRIES, LOOKING_FOR, placeCountry, placeLabel, STATES } from "@/data/members";
+import { DIAL_CODES, GENDERS, updateProfile, useSettings } from "@/lib/profile-store";
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
+import { router } from "expo-router";
+import { ComponentProps, useState } from "react";
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+
+type Tab = "personal" | "business" | "expertise";
+const TABS: { key: Tab; label: string; icon: ComponentProps<typeof Ionicons>["name"] }[] = [
+  { key: "personal", label: "Personal", icon: "person" },
+  { key: "business", label: "Business", icon: "business" },
+  { key: "expertise", label: "Expertise", icon: "ribbon" },
+];
+
+const ABOUT_MAX = 500;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const withCurrent = (options: string[], current: string[]) => [...options, ...current.filter((c) => !options.includes(c))];
+
+export default function EditProfile() {
+  const { profile } = useSettings();
+  const [tab, setTab] = useState<Tab>("personal");
+  const [form, setForm] = useState(profile);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    setErrors((e) => ({ ...e, [key]: "" }));
+  };
+  const pickCover = usePickImage((uri) => set("cover", { uri }), [16, 9]);
+  const pickPhoto = usePickImage((uri) => set("photo", { uri }));
+
+  const save = () => {
+    const next: Record<string, string> = {};
+    if (!form.name.trim()) next.name = "Full name is required";
+    if (!EMAIL_RE.test(form.email.trim())) next.email = "Enter a valid email address";
+    if (form.mobile.replace(/\D/g, "").length < 10) next.mobile = "Enter a valid 10-digit mobile number";
+    if (!form.city.trim()) next.city = "Location is required";
+    if (!form.designation.trim()) next.designation = "Designation is required";
+    setErrors(next);
+    if (Object.keys(next).length) {
+      setTab(next.name || next.email || next.mobile || next.city ? "personal" : "business");
+      return;
+    }
+    updateProfile({ ...form, name: form.name.trim(), designation: form.designation.trim(), email: form.email.trim() });
+    Alert.alert("Profile updated", "Your changes have been saved.", [{ text: "OK", onPress: () => router.back() }]);
+  };
+
+  return (
+    <SettingsScreen title="Edit Profile" footer={<GoldButton label="Save Changes" onPress={save} />}>
+      <SegmentTabs tabs={TABS} value={tab} onChange={setTab} />
+
+      {tab === "personal" ? (
+        <View>
+          <View style={styles.coverWrap}>
+            <Pressable onPress={pickCover} accessibilityRole="button" accessibilityLabel="Change cover photo" style={styles.cover}>
+              <Image source={form.cover ?? require("../../assets/images/profile-banner.png")} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="right" />
+              <View style={styles.coverLabel}>
+                <Ionicons name="image-outline" size={14} color={Colors.navy} />
+                <Text style={styles.coverText}>Change Cover Photo</Text>
+              </View>
+            </Pressable>
+            <Pressable onPress={pickPhoto} accessibilityRole="button" accessibilityLabel="Change profile photo" style={styles.avatarWrap}>
+              <View style={styles.ring}>
+                <Avatar name={form.name} photo={form.photo} size={92} />
+              </View>
+              <View style={styles.camera}>
+                <Ionicons name="camera" size={14} color={Colors.white} />
+              </View>
+            </Pressable>
+          </View>
+
+          <View style={styles.sectionHead}>
+            <View style={styles.sectionIcon}>
+              <Ionicons name="person" size={20} color={Colors.goldDark} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.sectionTitle}>Personal Information</Text>
+              <Text style={styles.sectionSub}>Update your personal details and contact information</Text>
+            </View>
+          </View>
+
+          <TextBox label="Full Name" icon="person-outline" required value={form.name} onChangeText={(v) => set("name", v)} error={errors.name} autoCapitalize="words" />
+          <DateBox label="Date of Birth" icon="gift-outline" value={form.dob} onChange={(v) => set("dob", v)} />
+          <TextBox label="Email" icon="mail-outline" required value={form.email} onChangeText={(v) => set("email", v)} error={errors.email} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} />
+          <PhoneBox label="Mobile Number" required dialCode={form.dialCode} dialCodes={DIAL_CODES} onDialCode={(v) => set("dialCode", v)} value={form.mobile} onChangeText={(v) => set("mobile", v)} error={errors.mobile} />
+          <PickBox label="Gender" icon="person-circle-outline" placeholder="Select" value={form.gender} options={GENDERS} onChange={(v) => set("gender", v)} />
+          <PickBox
+            label="Location"
+            icon="location-outline"
+            required
+            placeholder="Select location"
+            value={form.city ? placeLabel(form.city) : ""}
+            options={withCurrent(CITIES, [form.city].filter(Boolean))}
+            render={placeLabel}
+            onChange={(city) => {
+              setForm((f) => ({ ...f, city, country: placeCountry(city) || f.country, region: placeLabel(city) }));
+              setErrors((e) => ({ ...e, city: "" }));
+            }}
+            error={errors.city}
+          />
+
+          <Text style={styles.aboutLabel}>About Me</Text>
+          <TextInput
+            value={form.about}
+            onChangeText={(v) => set("about", v.slice(0, ABOUT_MAX))}
+            multiline
+            textAlignVertical="top"
+            placeholder="Tell members about yourself"
+            placeholderTextColor={Colors.textMuted}
+            style={styles.textarea}
+          />
+          <Text style={styles.count}>
+            {form.about.length}/{ABOUT_MAX}
+          </Text>
+        </View>
+      ) : null}
+
+      {tab === "business" ? (
+        <View>
+          <Field label="Company Name" icon="business-outline" value={form.company} onChangeText={(v) => set("company", v)} />
+          <Field label="Designation" icon="briefcase-outline" required value={form.designation} onChangeText={(v) => set("designation", v)} error={errors.designation} autoCapitalize="words" />
+          <Select label="Industry" icon="layers-outline" placeholder="Select industry" value={form.industry} options={withCurrent(INDUSTRIES, [form.industry])} onChange={(v) => set("industry", v)} />
+          <Select label="Business Type" icon="briefcase-outline" placeholder="Select business type" value={form.bizType} options={BUSINESS_TYPES} onChange={(v) => set("bizType", v)} />
+          <Field label="Website" icon="globe-outline" optional value={form.website} onChangeText={(v) => set("website", v)} keyboardType="url" autoCapitalize="none" autoCorrect={false} />
+          <Field label="Business Address" icon="location-outline" value={form.bizAddress} onChangeText={(v) => set("bizAddress", v)} />
+          <Select label="State" icon="map-outline" placeholder="Select state" value={form.bizState} options={STATES} onChange={(v) => set("bizState", v)} />
+          <Select label="City" icon="location-outline" placeholder="Select city" value={form.bizCity} options={INDIAN_CITIES} onChange={(v) => set("bizCity", v)} />
+        </View>
+      ) : null}
+
+      {tab === "expertise" ? (
+        <View>
+          <MultiSelect label="Expertise" icon="ribbon-outline" placeholder="Select expertise" values={form.expertise} options={withCurrent(EXPERTISE, form.expertise)} onChange={(v) => set("expertise", v)} />
+          <MultiSelect label="Looking For" icon="search-outline" placeholder="What are you looking for?" values={form.lookingFor} options={withCurrent(LOOKING_FOR, form.lookingFor)} onChange={(v) => set("lookingFor", v)} />
+          <MultiSelect label="Can Offer" icon="gift-outline" placeholder="What can you offer?" values={form.canOffer} options={withCurrent(CAN_OFFER, form.canOffer)} onChange={(v) => set("canOffer", v)} />
+          <MultiSelect label="Countries" icon="earth-outline" placeholder="Countries you do business in" values={form.countries} options={withCurrent(COUNTRIES, form.countries)} onChange={(v) => set("countries", v)} />
+        </View>
+      ) : null}
+    </SettingsScreen>
+  );
+}
+
+const styles = StyleSheet.create({
+  coverWrap: { marginBottom: 56 },
+  cover: { height: 120, borderRadius: Radius.lg, overflow: "hidden", backgroundColor: "#FFF9EE", justifyContent: "flex-end", alignItems: "flex-end", padding: 10 },
+  coverLabel: { flexDirection: "row", alignItems: "center", gap: 5, height: 30, paddingHorizontal: 12, borderRadius: 15, backgroundColor: Colors.white },
+  coverText: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 12 },
+  avatarWrap: { position: "absolute", left: 16, bottom: -52 },
+  ring: { padding: 4, borderRadius: 60, borderWidth: 2, borderColor: Colors.gold, backgroundColor: Colors.white },
+  camera: { position: "absolute", right: 2, bottom: 4, width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.navy, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: Colors.white },
+  sectionHead: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 4 },
+  sectionIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#FEF3DC", alignItems: "center", justifyContent: "center" },
+  sectionTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 17 },
+  sectionSub: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 12, marginTop: 2 },
+  aboutLabel: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 13, marginTop: 16, marginBottom: 8 },
+  textarea: { minHeight: 110, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.white, padding: 14, color: Colors.navy, fontFamily: Fonts.regular, fontSize: 15 },
+  count: { alignSelf: "flex-end", color: Colors.textMuted, fontFamily: Fonts.regular, fontSize: 11, marginTop: 4 },
+});

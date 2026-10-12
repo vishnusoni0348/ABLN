@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/empty-state";
 import { NetworkTabBar, PersonAvatar } from "@/components/intro-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { findMember } from "@/data/members";
@@ -25,13 +26,7 @@ export default function ConnectionRequests() {
       </View>
 
       {incoming.length === 0 ? (
-        <View style={styles.empty}>
-          <View style={styles.halo}>
-            <Ionicons name="person-add-outline" size={44} color={Colors.gold} />
-          </View>
-          <Text style={styles.emptyTitle}>No pending requests</Text>
-          <Text style={styles.emptyText}>New connection requests will show up here.</Text>
-        </View>
+        <EmptyState icon="person-add-outline" title="No Pending Requests" text="New connection requests will show up here." cta={{ label: "Discover Members", onPress: () => router.replace("/network") }} />
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <Text style={styles.count}>

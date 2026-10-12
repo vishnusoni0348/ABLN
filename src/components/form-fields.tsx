@@ -1,11 +1,13 @@
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { ComponentProps, ReactNode, useState } from "react";
 import {
   Alert,
   Image,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -128,6 +130,73 @@ export function Select({
           </ScrollView>
         </View>
       </Modal>
+    </View>
+  );
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const toIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const fromIso = (v: string) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+};
+
+/** Date-of-birth picker; value is an ISO "YYYY-MM-DD" string. */
+export function DateSelect({ label, icon, placeholder, value, onChange, required, optional, error }: Omit<SelectProps, "options" | "onChange" | "disabled" | "value"> & { value: string; onChange: (iso: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const insets = useSafeAreaInsets();
+  const current = fromIso(value) ?? new Date(1990, 0, 1);
+  const [draft, setDraft] = useState(current);
+  const max = new Date();
+  const shown = fromIso(value);
+
+  const onPick = (e: DateTimePickerEvent, d?: Date) => {
+    if (Platform.OS === "android") {
+      setOpen(false);
+      if (e.type === "set" && d) onChange(toIso(d));
+    } else if (d) setDraft(d);
+  };
+
+  return (
+    <View style={styles.group}>
+      <Label text={label} required={required} optional={optional} />
+      <Pressable
+        onPress={() => {
+          setDraft(current);
+          setOpen(true);
+        }}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        style={[styles.box, !!error && styles.boxError]}
+      >
+        <Ionicons name={icon} size={22} color={Colors.navy} />
+        <Text style={[styles.input, !shown && { color: Colors.textMuted }]} numberOfLines={1}>
+          {shown ? `${shown.getDate()} ${MONTHS[shown.getMonth()]} ${shown.getFullYear()}` : placeholder}
+        </Text>
+        <Ionicons name="calendar-outline" size={20} color={Colors.navy} />
+      </Pressable>
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {open && Platform.OS === "android" ? <DateTimePicker value={current} mode="date" maximumDate={max} onChange={onPick} /> : null}
+      {Platform.OS === "ios" ? (
+        <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
+          <Pressable style={styles.backdrop} onPress={() => setOpen(false)} />
+          <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>{label}</Text>
+              <Pressable
+                onPress={() => {
+                  onChange(toIso(draft));
+                  setOpen(false);
+                }}
+                hitSlop={10}
+              >
+                <Text style={styles.done}>Done</Text>
+              </Pressable>
+            </View>
+            <DateTimePicker value={draft} mode="date" display="spinner" maximumDate={max} onChange={onPick} />
+          </View>
+        </Modal>
+      ) : null}
     </View>
   );
 }

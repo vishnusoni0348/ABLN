@@ -19,7 +19,7 @@ const CARDS = [
 export default function ApplicationIntro() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const logoWidth = Math.min(width * 0.62, 260);
 
   return (
@@ -27,7 +27,7 @@ export default function ApplicationIntro() {
       <StatusBar style="dark" />
       <Image
         source={require("../../assets/images/application-bg.png")}
-        style={[styles.bg, { width, height }]}
+        style={styles.bg}
         resizeMode="cover"
       />
 
@@ -82,7 +82,7 @@ export default function ApplicationIntro() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
-  bg: { position: "absolute", top: 0, left: 0 },
+  bg: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" },
   content: { flex: 1, paddingHorizontal: 20 },
   back: { paddingVertical: 8, alignSelf: "flex-start" },
   header: { alignItems: "center", marginTop: 8 },

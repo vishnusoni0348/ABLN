@@ -29,13 +29,9 @@ export function TabHeader({ extraActions, onAvatarPress }: { extraActions?: Reac
       <View style={styles.actions}>
         {extraActions}
         <HeaderIconButton icon="notifications-outline" onPress={() => router.push("/notifications")} label="Notifications" dot={unreadCount > 0} />
-        {onAvatarPress ? (
-          <Pressable onPress={onAvatarPress} hitSlop={6} accessibilityLabel="My business card">
-            {avatar}
-          </Pressable>
-        ) : (
-          avatar
-        )}
+        <Pressable onPress={onAvatarPress ?? (() => router.push("/my-profile"))} hitSlop={6} accessibilityLabel="My profile">
+          {avatar}
+        </Pressable>
       </View>
     </View>
   );

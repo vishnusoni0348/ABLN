@@ -76,13 +76,13 @@ export function BackHeader({ title, fallback = "/network" }: { title: string; fa
   );
 }
 
-const NAV: { icon: IconName; iconOn: IconName; label: string; on?: boolean; to?: "/home" | "/network" }[] = [
+const NAV: { icon: IconName; iconOn: IconName; label: string; on?: boolean; to: "/home" | "/network" | "/opportunities" | "/events" | "/partners" | "/membership" }[] = [
   { icon: "home-outline", iconOn: "home", label: "Home", to: "/home" },
   { icon: "people-outline", iconOn: "people", label: "Network", on: true, to: "/network" },
-  { icon: "briefcase-outline", iconOn: "briefcase", label: "Opportunities" },
-  { icon: "calendar-outline", iconOn: "calendar", label: "Events" },
-  { icon: "chatbox-ellipses-outline", iconOn: "chatbox-ellipses", label: "Messages" },
-  { icon: "grid-outline", iconOn: "grid", label: "More" },
+  { icon: "briefcase-outline", iconOn: "briefcase", label: "Opportunities", to: "/opportunities" },
+  { icon: "calendar-outline", iconOn: "calendar", label: "Events", to: "/events" },
+  { icon: "ribbon-outline", iconOn: "ribbon", label: "Partners", to: "/partners" },
+  { icon: "shield-checkmark-outline", iconOn: "shield-checkmark", label: "Membership", to: "/membership" },
 ];
 
 // Stack screens sit above the tabs, so they carry their own copy of the bar with Network active.
@@ -91,7 +91,7 @@ export function NetworkTabBar() {
   return (
     <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
       {NAV.map((t) => (
-        <Pressable key={t.label} onPress={() => t.to && router.navigate(t.to)} style={styles.tab} accessibilityRole="tab" accessibilityState={{ selected: !!t.on }}>
+        <Pressable key={t.label} onPress={() => router.navigate(t.to)} style={styles.tab} accessibilityRole="tab" accessibilityState={{ selected: !!t.on }}>
           <Ionicons name={t.on ? t.iconOn : t.icon} size={24} color={t.on ? Colors.goldDark : Colors.textSecondary} />
           <Text style={[styles.tabLabel, t.on && styles.tabLabelOn]} numberOfLines={1}>
             {t.label}

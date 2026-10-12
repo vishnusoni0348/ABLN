@@ -5,6 +5,7 @@ import { type AppEvent, type Availability, type EventCategory, availability, for
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image as ExpoImage } from "expo-image";
+import { toggleSavedEvent, useEvents } from "@/lib/event-store";
 import { router } from "expo-router";
 import { ComponentProps, useEffect, useState } from "react";
 import { Animated, Image, ImageSourcePropType, Modal, Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
@@ -60,6 +61,17 @@ function Meta({ icon, children }: { icon: IconName; children: string }) {
         {children}
       </Text>
     </View>
+  );
+}
+
+// Bookmark toggle. `floating` renders a white circle for overlaying on card banners.
+export function SaveEventButton({ id, floating, style }: { id: string; floating?: boolean; style?: StyleProp<ViewStyle> }) {
+  const { saved } = useEvents();
+  const on = saved.includes(id);
+  return (
+    <Pressable onPress={() => toggleSavedEvent(id)} hitSlop={8} style={[floating && styles.saveFloat, style]} accessibilityRole="button" accessibilityLabel={on ? "Remove from saved events" : "Save event"}>
+      <Ionicons name={on ? "bookmark" : "bookmark-outline"} size={floating ? 18 : 20} color={on ? Colors.goldDark : Colors.navy} />
+    </Pressable>
   );
 }
 
@@ -138,6 +150,7 @@ export function FeaturedEventCard({ e, onPress }: { e: AppEvent; onPress?: () =>
   return (
     <Pressable onPress={onPress ?? (() => openEvent(e.id))} style={({ pressed }) => [styles.card, CARD_SHADOW, pressed && styles.pressed]} accessibilityRole="button" accessibilityLabel={e.title}>
       <EventThumb event={e} style={styles.bigBanner} />
+      <SaveEventButton id={e.id} floating style={styles.saveCorner} />
       <View style={styles.body}>
         <CardInfo e={e} />
         <View style={styles.footer}>
@@ -154,6 +167,7 @@ export function EventCard({ e, capacity, onPress }: { e: AppEvent; capacity?: bo
   return (
     <Pressable onPress={onPress ?? (() => openEvent(e.id))} style={({ pressed }) => [styles.card, CARD_SHADOW, pressed && styles.pressed]} accessibilityRole="button" accessibilityLabel={e.title}>
       <EventThumb event={e} style={styles.banner} />
+      <SaveEventButton id={e.id} floating style={styles.saveCorner} />
       <View style={styles.body}>
         <CardInfo e={e} />
         <View style={styles.footer}>
@@ -278,6 +292,8 @@ const styles = StyleSheet.create({
   optionText: { color: Colors.navy, fontFamily: Fonts.regular, fontSize: 14 },
   optionOn: { fontFamily: Fonts.bold, color: Colors.goldDark },
 
+  saveFloat: { width: 34, height: 34, borderRadius: 17, backgroundColor: Colors.white, alignItems: "center", justifyContent: "center" },
+  saveCorner: { position: "absolute", top: 10, right: 10 },
   pressed: { opacity: 0.85 },
   flex: { flex: 1 },
   row: { flexDirection: "row", gap: 12 },

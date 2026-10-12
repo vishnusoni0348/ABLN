@@ -1,7 +1,9 @@
+import { EmptyState } from "@/components/empty-state";
 import { CARD_SHADOW, ScreenHeader, Tag } from "@/components/member-ui";
 import { GOLD_GRADIENT, Meta, OppThumb } from "@/components/opportunity-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import type { MineStatus, MyOpportunity } from "@/data/opportunities";
+import { BottomSheet, MenuRow } from "@/components/settings-ui";
 import { removeMine, setMineStatus, useOpportunities } from "@/lib/opportunity-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -11,22 +13,30 @@ import { useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const TABS: MineStatus[] = ["Active", "Pending", "Closed"];
+const TABS: MineStatus[] = ["Active", "Pending", "Paused", "Closed"];
 const BADGE: Record<MineStatus, { bg: string; fg: string }> = {
   Active: { bg: "#DDF4E7", fg: Colors.success },
   Pending: { bg: "#FDEBC8", fg: Colors.goldDark },
+  Paused: { bg: "#E9ECF3", fg: Colors.textSecondary },
   Closed: { bg: "#FBDADA", fg: Colors.error },
 };
 
 function MineCard({ o }: { o: MyOpportunity }) {
   const badge = BADGE[o.status];
-  // Creating and editing opportunities isn't built yet, so those actions say so.
-  const soon = () => Alert.alert("Coming soon", "Editing opportunities will be available shortly.");
-  const more = () =>
-    Alert.alert(o.title, undefined, [
-      ...(o.status === "Closed" ? [] : [{ text: "Mark as Closed", onPress: () => setMineStatus(o.id, "Closed" as const) }]),
-      { text: "Delete", style: "destructive" as const, onPress: () => removeMine(o.id) },
-      { text: "Cancel", style: "cancel" as const },
+  const [menu, setMenu] = useState(false);
+  const run = (fn: () => void) => () => {
+    setMenu(false);
+    fn();
+  };
+  const manage = (action: "pause" | "close") => router.push({ pathname: "/manage-opportunity", params: { id: o.id, action } });
+  const resume = () => {
+    setMineStatus(o.id, "Active");
+    router.push({ pathname: "/opportunity-status-updated", params: { id: o.id, action: "resume", from: "Paused" } });
+  };
+  const remove = () =>
+    Alert.alert("Delete opportunity?", "This will permanently remove it and its interest requests.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: () => removeMine(o.id) },
     ]);
 
   return (
@@ -55,13 +65,24 @@ function MineCard({ o }: { o: MyOpportunity }) {
         <Pressable style={[styles.action, styles.flex]} onPress={() => router.push({ pathname: "/opportunity-details", params: { id: o.id } })} accessibilityRole="button">
           <Text style={styles.actionText}>View</Text>
         </Pressable>
-        <Pressable style={[styles.action, styles.flex]} onPress={soon} accessibilityRole="button">
+        <Pressable style={[styles.action, styles.flex]} onPress={() => router.push({ pathname: "/create-opportunity", params: { id: o.id } })} accessibilityRole="button">
           <Text style={styles.actionText}>Edit</Text>
         </Pressable>
-        <Pressable style={[styles.action, styles.flex]} onPress={more} accessibilityRole="button" accessibilityLabel="More actions">
+        <Pressable style={[styles.action, styles.flex]} onPress={() => setMenu(true)} accessibilityRole="button" accessibilityLabel="More actions">
           <Ionicons name="ellipsis-horizontal" size={18} color={Colors.navy} />
         </Pressable>
       </View>
+      <BottomSheet visible={menu} title="Manage Opportunity" onClose={() => setMenu(false)}>
+        <Text style={styles.sheetSub} numberOfLines={2}>
+          {o.title}
+        </Text>
+        <MenuRow icon="eye-outline" title="View Details" sub="See how members see it" onPress={run(() => router.push({ pathname: "/opportunity-details", params: { id: o.id } }))} />
+        <MenuRow icon="create-outline" title="Edit Opportunity" sub="Update details, timeline and contact" onPress={run(() => router.push({ pathname: "/create-opportunity", params: { id: o.id } }))} />
+        {o.status === "Active" ? <MenuRow icon="pause-circle-outline" title="Pause Opportunity" sub="Temporarily hide it from members" onPress={run(() => manage("pause"))} /> : null}
+        {o.status === "Paused" ? <MenuRow icon="play-circle-outline" title="Resume Opportunity" sub="Make it visible to members again" onPress={run(resume)} /> : null}
+        {o.status === "Closed" ? null : <MenuRow icon="close-circle-outline" title="Close Opportunity" sub="Permanently stop receiving requests" onPress={run(() => manage("close"))} danger />}
+        <MenuRow icon="trash-outline" title="Delete Opportunity" sub="Remove it permanently" onPress={run(remove)} danger />
+      </BottomSheet>
     </View>
   );
 }
@@ -116,7 +137,13 @@ export default function MyOpportunities() {
         {list.length ? (
           list.map((o) => <MineCard key={o.id} o={o} />)
         ) : (
-          <Text style={styles.none}>{`No ${tab.toLowerCase()} opportunities.`}</Text>
+          <EmptyState
+            inline
+            icon="briefcase-outline"
+            title={`No ${tab} Opportunities`}
+            text={tab === "Active" ? "Post an opportunity to find partners, investors and customers across ABLN." : `You have no ${tab.toLowerCase()} opportunities right now.`}
+            cta={tab === "Active" ? { label: "Create Opportunity", onPress: () => router.push("/create-opportunity") } : undefined}
+          />
         )}
       </ScrollView>
     </View>
@@ -148,5 +175,6 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", gap: 10, marginTop: 12 },
   action: { height: 38, borderRadius: Radius.sm, borderWidth: 1, borderColor: Colors.border, alignItems: "center", justifyContent: "center", backgroundColor: Colors.white },
   actionText: { color: Colors.navy, fontFamily: Fonts.semiBold, fontSize: 13 },
+  sheetSub: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 13, marginTop: -4 },
   none: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 13, textAlign: "center", paddingVertical: 40 },
 });

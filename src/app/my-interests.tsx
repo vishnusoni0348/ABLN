@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/empty-state";
 import { StatusPill, TopBar } from "@/components/interest-ui";
 import { CARD_SHADOW } from "@/components/member-ui";
 import { OppThumb } from "@/components/opportunity-ui";
@@ -17,8 +18,20 @@ export default function MyInterests() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       <TopBar title="My Interests" />
-      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]} showsVerticalScrollIndicator={false}>
-        {interests.length === 0 ? <Text style={styles.none}>You have not expressed interest in any opportunity yet.</Text> : null}
+      <ScrollView contentContainerStyle={[styles.scroll, interests.length === 0 && styles.grow, { paddingBottom: insets.bottom + 24 }]} showsVerticalScrollIndicator={false}>
+        {interests.length === 0 ? (
+          <EmptyState
+            icon="heart-outline"
+            title="No Interests Yet"
+            text="You have not expressed interest in any opportunity yet. Browse opportunities and connect with members who share your goals."
+            steps={[
+              { icon: "search-outline", text: "Explore opportunities that fit your business" },
+              { icon: "paper-plane-outline", text: "Express interest and share what you can offer" },
+              { icon: "chatbubbles-outline", text: "Track replies right here" },
+            ]}
+            cta={{ label: "Explore Opportunities", onPress: () => router.navigate("/opportunities") }}
+          />
+        ) : null}
         {interests.map((i) => {
           const o = findOpp(i.oppId, mine);
           if (!o) return null;
@@ -47,7 +60,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
   flex: { flex: 1 },
   scroll: { paddingHorizontal: 16, paddingTop: 4, gap: 12 },
-  none: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 13, textAlign: "center", paddingVertical: 48 },
+  grow: { flexGrow: 1 },
   card: { flexDirection: "row", gap: 12, padding: 12, borderRadius: Radius.lg, backgroundColor: Colors.white },
   title: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 13, lineHeight: 18 },
   meta: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 11, marginTop: 3 },

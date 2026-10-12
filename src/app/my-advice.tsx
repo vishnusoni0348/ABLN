@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/empty-state";
 import { Avatar, CARD_SHADOW, ScreenHeader } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { findMember } from "@/data/members";
@@ -17,8 +18,10 @@ export default function MyAdvice() {
       <View style={styles.pad}>
         <ScreenHeader title="My Advice Requests" />
       </View>
-      <ScrollView contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]} showsVerticalScrollIndicator={false}>
-        {items.length === 0 ? <Text style={styles.empty}>No advice requests yet.</Text> : null}
+      <ScrollView contentContainerStyle={[styles.list, items.length === 0 && { flexGrow: 1 }, { paddingBottom: insets.bottom + 24 }]} showsVerticalScrollIndicator={false}>
+        {items.length === 0 ? (
+          <EmptyState icon="bulb-outline" title="No Advice Requests" text="Ask a member expert for free or paid advice. Your requests and their replies will show up here." cta={{ label: "Find an Expert", onPress: () => router.navigate("/network") }} />
+        ) : null}
         {items.map((r) => (
           <Pressable key={r.id} style={styles.card} onPress={() => router.push({ pathname: "/advice-sent", params: { id: r.id } })} accessibilityRole="button">
             <Avatar name={r.expert} photo={findMember(r.expert)?.photo} size={48} />

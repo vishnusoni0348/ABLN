@@ -49,6 +49,10 @@ export function addMine(item: MyOpportunity) {
   setOpportunities({ mine: [item, ...state.mine] });
 }
 
+export function updateMine(id: string, patch: Partial<MyOpportunity>) {
+  setOpportunities({ mine: state.mine.map((m) => (m.id === id ? { ...m, ...patch } : m)) });
+}
+
 export function addInterest(i: Omit<Interest, "id" | "submittedAt" | "status">) {
   const interest: Interest = { ...i, id: `i${Date.now()}`, submittedAt: Date.now(), status: "Pending" };
   setOpportunities({ interests: [interest, ...state.interests] });

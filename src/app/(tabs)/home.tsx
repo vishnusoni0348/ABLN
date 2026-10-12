@@ -6,6 +6,8 @@ import { QuestionCard } from "@/components/ask-ui";
 import { openEvent } from "@/components/event-ui";
 import { EVENTS as ALL_EVENTS } from "@/data/events";
 import { searchQuestions } from "@/data/questions";
+import { EMPTY_FILTERS } from "@/data/members";
+import { setDirectory } from "@/lib/directory-store";
 import { useQuestions } from "@/lib/question-store";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -175,6 +177,12 @@ export default function Home() {
   };
 
   const [query, setQuery] = useState("");
+  // Business accounts are the Business member type in the directory.
+  const openBusinesses = () => {
+    setDirectory({ query: "", filters: { ...EMPTY_FILTERS, memberType: "Business" }, sort: "relevance" });
+    router.navigate("/search-results");
+  };
+
   const q = query.trim().toLowerCase();
   const hit = (...parts: string[]) => !q || parts.join(" ").toLowerCase().includes(q);
   const sel = (g: string) => filters[g] ?? [];
@@ -246,7 +254,7 @@ export default function Home() {
           </Pressable>
         </View>
       </Modal>
-      <TabHeader onAvatarPress={() => router.push("/business-card")} />
+      <TabHeader />
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: 6, paddingBottom: 24 }]} showsVerticalScrollIndicator={false}>
         {/* Hero */}
         <HeroSlider />
@@ -362,7 +370,7 @@ export default function Home() {
         {/* Businesses */}
         {showBusinesses ? (
           <View style={{ gap: 12 }}>
-            <SectionHeader title="Businesses" />
+            <SectionHeader title="Businesses" onAction={openBusinesses} />
             {members.map((m) => (
               <Pressable key={m.company} style={styles.card} onPress={() => router.push({ pathname: "/member-profile", params: { name: m.name } })}>
                 <View style={styles.cardTop}>

@@ -1,4 +1,4 @@
-import { EventThumb, GoingRow } from "@/components/event-ui";
+import { EventThumb, GoingRow, SaveEventButton } from "@/components/event-ui";
 import { GOLD_GRADIENT } from "@/components/opportunity-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { EVENTS, type AppEvent, availability, calendarUrl, eventDetails, formatEventDate, isRegistrationOpen } from "@/data/events";
@@ -90,9 +90,12 @@ export default function EventDetails() {
             <Pressable onPress={() => router.back()} style={styles.round} accessibilityRole="button" accessibilityLabel="Go back">
               <Ionicons name="chevron-back" size={22} color={Colors.navy} />
             </Pressable>
-            <Pressable onPress={share} style={styles.round} accessibilityRole="button" accessibilityLabel="Share event">
-              <Ionicons name="share-outline" size={20} color={Colors.navy} />
-            </Pressable>
+            <View style={styles.heroActions}>
+              <SaveEventButton id={e.id} floating />
+              <Pressable onPress={share} style={styles.round} accessibilityRole="button" accessibilityLabel="Share event">
+                <Ionicons name="share-outline" size={20} color={Colors.navy} />
+              </Pressable>
+            </View>
           </View>
           <View style={styles.heroBody}>
             <View style={styles.badge}>
@@ -212,6 +215,7 @@ const styles = StyleSheet.create({
   hero: { height: 400, borderRadius: 0 },
   heroShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(3,18,37,0.55)" },
   heroBar: { position: "absolute", left: 16, right: 16, flexDirection: "row", justifyContent: "space-between" },
+  heroActions: { flexDirection: "row", alignItems: "center", gap: 10 },
   round: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.white, alignItems: "center", justifyContent: "center" },
   heroBody: { position: "absolute", left: 20, right: 20, bottom: 40, gap: 8 },
   badge: { alignSelf: "flex-start", paddingHorizontal: 12, paddingVertical: 5, borderRadius: 14, backgroundColor: Colors.champagne },

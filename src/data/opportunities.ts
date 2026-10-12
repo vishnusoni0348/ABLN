@@ -245,8 +245,28 @@ export function searchOpportunities(query: string, f: Filters, sort: SortKey): O
   });
 }
 
-export type MineStatus = "Active" | "Pending" | "Closed";
-export type MyOpportunity = { id: string; title: string; category: Category; industry: string; location: string; valueLabel: string; postedLabel: string; status: MineStatus; cover?: string };
+export type MineStatus = "Active" | "Pending" | "Paused" | "Closed";
+// Everything the create/edit form collects; `MyOpportunity.form` keeps it so an opportunity can be edited later.
+export type OppForm = {
+  title: string;
+  category: string;
+  short: string;
+  detailed: string;
+  location: string;
+  cover: string;
+  industry: string;
+  type: string;
+  value: string;
+  audience: string;
+  requirements: string;
+  tags: string[];
+  deadline: string;
+  start: string;
+  contact: string;
+  extra: string;
+  direct: boolean;
+};
+export type MyOpportunity = { id: string; title: string; category: Category; industry: string; location: string; valueLabel: string; postedLabel: string; status: MineStatus; cover?: string; form?: OppForm };
 
 export const MY_OPPORTUNITIES: MyOpportunity[] = [
   { id: "m1", title: "IT Consulting Partnership for SMEs", category: "Partnership", industry: "Services", location: "Delhi, India", valueLabel: "₹50L – 2 Cr", postedLabel: "10 Oct 2026", status: "Active" },

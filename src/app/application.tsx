@@ -1,5 +1,7 @@
-import { Field, MultiSelect, Select, UploadCard, usePickImage, Label } from "@/components/form-fields";
+import { DateSelect, Field, MultiSelect, Select, UploadCard, usePickImage, Label } from "@/components/form-fields";
 import { Stepper } from "@/components/stepper";
+import { BUSINESS_TYPES, INDIAN_CITIES as CITIES, STATES } from "@/data/members";
+import { GENDERS } from "@/lib/profile-store";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -23,10 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
-const CITIES = ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad", "Jaipur", "Surat", "Lucknow", "Indore"];
-const STATES = ["Maharashtra", "Delhi", "Karnataka", "Telangana", "Tamil Nadu", "West Bengal", "Gujarat", "Rajasthan", "Uttar Pradesh", "Madhya Pradesh", "Haryana", "Punjab"];
 const INDUSTRIES = ["Manufacturing", "Retail & Wholesale", "Real Estate", "Finance & Banking", "IT & Software", "Healthcare", "Education", "Hospitality", "Textiles", "Logistics", "Agriculture", "Other"];
-const BUSINESS_TYPES = ["Proprietorship", "Partnership", "Private Limited", "Public Limited", "LLP", "Other"];
 const TARGET_CUSTOMERS = ["Individuals", "Small Businesses", "Enterprises", "Government", "Exporters", "Retailers", "Distributors"];
 const HIGHLIGHTS = ["Award Winning", "ISO Certified", "10+ Years in Business", "Pan-India Presence", "Export Quality", "Unique USP"];
 const PRODUCT_OPTIONS = ["Products", "Services", "Consulting", "Software", "Wholesale Supply", "Manufacturing", "Distribution", "Installation & Support"];
@@ -54,7 +53,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function Application() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const logoWidth = Math.min(width * 0.62, 260);
 
   const [step, setStep] = useState(0);
@@ -64,6 +63,10 @@ export default function Application() {
 
   // Step 1
   const [name, setName] = useState("");
+  const [designation, setDesignation] = useState("");
+  const [dob, setDob] = useState("");
+  const [gender, setGender] = useState("");
+  const [about, setAbout] = useState("");
   const [photo, setPhoto] = useState<string>();
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
@@ -100,6 +103,7 @@ export default function Application() {
       if (!city) e.city = "Please select your city";
     } else if (step === 1) {
       if (!bizName.trim()) e.bizName = "Please enter your business name";
+      if (!designation.trim()) e.designation = "Please enter your designation";
       if (!industry) e.industry = "Please select an industry";
       if (!bizType) e.bizType = "Please select a business type";
       if (!address.trim()) e.address = "Please enter your business address";
@@ -153,12 +157,8 @@ export default function Application() {
     <View style={styles.container}>
       <StatusBar style="dark" />
       <Image
-        source={
-          step === REVIEW_STEP
-            ? require("../../assets/images/white-bg.png")
-            : require("../../assets/images/application-bg.png")
-        }
-        style={[styles.bg, { width, height }]}
+        source={step === REVIEW_STEP ? require("../../assets/images/light-bg.png") : require("../../assets/images/white-bg.png")}
+        style={styles.bg}
         resizeMode="cover"
       />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -220,6 +220,7 @@ export default function Application() {
                   <Ionicons name="camera-outline" size={18} color={Colors.white} />
                 </View>
               </View>
+              <DateSelect label="Date of Birth" icon="gift-outline" placeholder="Select date of birth" optional value={dob} onChange={setDob} />
               <Field
                 label="Mobile Number"
                 icon="call-outline"
@@ -243,6 +244,7 @@ export default function Application() {
                 autoCorrect={false}
                 error={errors.email}
               />
+              <Select label="Gender" icon="person-circle-outline" optional placeholder="Select gender" value={gender} options={GENDERS} onChange={setGender} />
               <Select
                 label="City"
                 icon="location-outline"
@@ -253,6 +255,25 @@ export default function Application() {
                 onChange={setCity}
                 error={errors.city}
               />
+              <View style={styles.group}>
+                <Label text="About Me" optional />
+                <View style={styles.textArea}>
+                  <Ionicons name="document-text-outline" size={22} color={Colors.navy} />
+                  <TextInput
+                    style={styles.textAreaInput}
+                    placeholder="Tell members about yourself"
+                    placeholderTextColor={Colors.textMuted}
+                    value={about}
+                    onChangeText={(t) => setAbout(t.slice(0, 500))}
+                    multiline
+                    textAlignVertical="top"
+                  />
+                </View>
+                <View style={styles.counterRow}>
+                  <Text style={styles.error} />
+                  <Text style={styles.counter}>{about.length}/500</Text>
+                </View>
+              </View>
             </>
           )}
 
@@ -267,6 +288,16 @@ export default function Application() {
                 onChangeText={setBizName}
                 autoCapitalize="words"
                 error={errors.bizName}
+              />
+              <Field
+                label="Designation"
+                icon="briefcase-outline"
+                required
+                placeholder="Enter your designation"
+                value={designation}
+                onChangeText={setDesignation}
+                autoCapitalize="words"
+                error={errors.designation}
               />
               <Select
                 label="Industry / Business Category"
@@ -464,7 +495,7 @@ export default function Application() {
                 {(
                   [
                     ["Personal Details", [name, city].filter(Boolean).join(", "), 0],
-                    ["Business Details", [bizName, bizType].filter(Boolean).join(", "), 1],
+                    ["Business Details", [bizName, designation, bizType].filter(Boolean).join(", "), 1],
                     ["Business Profile", products.join(", "), 2],
                     ["Profile Visibility", VISIBILITY.find((v) => v.key === visibility)?.title ?? "", 3],
                   ] as const
@@ -518,7 +549,7 @@ export default function Application() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
-  bg: { position: "absolute", top: 0, left: 0 },
+  bg: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" },
   flex: { flex: 1 },
   scroll: { flexGrow: 1, paddingHorizontal: 20 },
   back: { paddingVertical: 8, alignSelf: "flex-start" },

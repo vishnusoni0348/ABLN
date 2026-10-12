@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ComponentProps, useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -20,7 +20,6 @@ const PLANS: { key: string; icon: IconName; title: string; desc: string; tag?: s
 export default function MembershipPlans() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
   const [selected, setSelected] = useState("regular");
 
   return (
@@ -28,7 +27,7 @@ export default function MembershipPlans() {
       <StatusBar style="dark" />
       <Image
         source={require("../../assets/images/white-bg.png")}
-        style={[styles.bg, { width, height }]}
+        style={styles.bg}
         resizeMode="cover"
       />
       <ScrollView
@@ -89,7 +88,7 @@ export default function MembershipPlans() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
-  bg: { position: "absolute", top: 0, left: 0 },
+  bg: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" },
   flex: { flex: 1 },
   scroll: { flexGrow: 1, paddingHorizontal: 20 },
   header: { alignItems: "center", justifyContent: "center", paddingVertical: 8 },

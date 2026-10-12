@@ -18,7 +18,7 @@ const FEATURES: { icon: IconName; bold: string; rest: string }[] = [
 export default function Welcome() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const logoWidth = Math.min(width * 0.72, 300);
 
   return (
@@ -26,7 +26,7 @@ export default function Welcome() {
       <StatusBar style="light" />
       <Image
         source={require("../../assets/images/onboarding-bg.png")}
-        style={[styles.bg, { width, height }]}
+        style={styles.bg}
         resizeMode="cover"
       />
       <LinearGradient
@@ -95,7 +95,7 @@ export default function Welcome() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.navy },
-  bg: { position: "absolute", top: 0, left: 0 },
+  bg: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" },
   content: { flex: 1, paddingHorizontal: 24 },
   divider: { width: 60, height: 1.5, backgroundColor: Colors.gold, marginTop: 14, marginBottom: 22 },
   heading: { color: Colors.white, fontFamily: Fonts.bold, fontSize: 28, lineHeight: 40 },

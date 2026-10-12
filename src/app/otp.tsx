@@ -14,7 +14,6 @@ import {
   Text,
   TextInput,
   View,
-  useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -24,7 +23,6 @@ const RESEND_SECONDS = 30;
 export default function Otp() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
   const { mobile, email, flow } = useLocalSearchParams<{ mobile?: string; email?: string; flow?: string }>();
   const isLogin = flow === "login";
   const viaEmail = isLogin && !mobile && !!email;
@@ -53,7 +51,7 @@ export default function Otp() {
       <StatusBar style="dark" />
       <Image
         source={require("../../assets/images/light-bg.png")}
-        style={[styles.bg, { width, height }]}
+        style={styles.bg}
         resizeMode="cover"
       />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -139,7 +137,7 @@ export default function Otp() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
-  bg: { position: "absolute", top: 0, left: 0 },
+  bg: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" },
   flex: { flex: 1 },
   scroll: { flexGrow: 1, paddingHorizontal: 24 },
   back: { paddingVertical: 8, alignSelf: "flex-start" },

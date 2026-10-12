@@ -1,6 +1,6 @@
 import { ScreenHeader } from "@/components/member-ui";
 import { MemberCard } from "@/components/membership-ui";
-import { GoldButton } from "@/components/opportunity-ui";
+import { GoldButton, OutlineButton } from "@/components/opportunity-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { CURRENT_MEMBER } from "@/data/membership";
 import { Ionicons } from "@expo/vector-icons";
@@ -54,6 +54,7 @@ export default function MembershipStatus() {
         </View>
 
         <GoldButton label="Manage Membership" onPress={() => router.push("/renew-membership")} />
+        <OutlineButton label="Payment History" onPress={() => router.push("/payment-history")} />
 
         <Pressable onPress={() => Linking.openURL(SUPPORT_EMAIL)} style={({ pressed }) => [styles.help, pressed && { opacity: 0.85 }]} accessibilityRole="button" accessibilityLabel="Contact support">
           <View style={styles.helpIcon}>

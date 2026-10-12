@@ -48,7 +48,7 @@ export default function Splash() {
       <StatusBar style="light" />
       <Image
         source={require("../../assets/images/splash-bg.png")}
-        style={[styles.bg, { width, height }]}
+        style={styles.bg}
         resizeMode="cover"
       />
 
@@ -80,7 +80,7 @@ export default function Splash() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: NAVY },
-  bg: { position: "absolute", top: 0, left: 0 },
+  bg: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" },
   top: { alignItems: "center" },
   divider: {
     width: 60,

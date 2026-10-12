@@ -1,5 +1,4 @@
 import { GoldFill, LoadingFooter, QuestionCard, SearchField, useInfinite } from "@/components/ask-ui";
-import { NetworkTabBar } from "@/components/intro-ui";
 import { ScreenHeader } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { QCATEGORIES, searchQuestions } from "@/data/questions";
@@ -105,7 +104,6 @@ export default function AskNetwork() {
           <Text style={styles.fabText}>Ask a Question</Text>
         </GoldFill>
       </Pressable>
-      <NetworkTabBar />
     </View>
   );
 }
@@ -137,7 +135,7 @@ const styles = StyleSheet.create({
   tabTextOn: { color: Colors.goldDark, fontFamily: Fonts.bold },
 
   empty: { textAlign: "center", color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 13, paddingVertical: 32 },
-  fabWrap: { position: "absolute", right: 16, bottom: 94 },
+  fabWrap: { position: "absolute", right: 16, bottom: 24 },
   fab: { flexDirection: "row", alignItems: "center", gap: 6, height: 46, paddingHorizontal: 18, borderRadius: 23, shadowColor: Colors.navy, shadowOpacity: 0.2, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 5 },
   fabText: { color: Colors.white, fontFamily: Fonts.bold, fontSize: 13 },
 });

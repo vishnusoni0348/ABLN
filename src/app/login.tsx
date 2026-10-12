@@ -30,7 +30,7 @@ const FEATURES: { icon: IconName; title: string; desc: string }[] = [
 export default function Login() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const [mode, setMode] = useState<Mode>("mobile");
   const [value, setValue] = useState("");
   const logoWidth = Math.min(width * 0.62, 260);
@@ -50,7 +50,7 @@ export default function Login() {
       <StatusBar style="dark" />
       <Image
         source={require("../../assets/images/login-bg.png")}
-        style={[styles.bg, { width, height }]}
+        style={styles.bg}
         resizeMode="cover"
       />
 
@@ -186,7 +186,7 @@ function TabButton({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
   flex: { flex: 1 },
-  bg: { position: "absolute", top: 0, left: 0 },
+  bg: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" },
   scroll: { flexGrow: 1 },
   back: { paddingHorizontal: 20, paddingVertical: 8, alignSelf: "flex-start" },
   header: { alignItems: "center", marginTop: 8, paddingHorizontal: 24 },

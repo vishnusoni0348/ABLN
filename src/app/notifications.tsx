@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/empty-state";
 import { Avatar, GOLD_BG } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { AppNotification, KIND_LABEL, markAllRead, markRead, NotificationKind, removeNotification, useNotifications } from "@/lib/notification-store";
@@ -184,18 +185,13 @@ export default function Notifications() {
         ) : null}
 
         {items.length === 0 ? (
-          <View style={styles.empty}>
-            <View style={styles.bellCircle}>
-              <Ionicons name="notifications" size={64} color={Colors.gold} />
-            </View>
-            <Text style={styles.emptyHead}>You’re all caught up!</Text>
-            <Text style={styles.emptyBody}>No new notifications at the moment. We’ll notify you about new connections, introductions, opportunities, events and more.</Text>
-            <Pressable onPress={() => router.replace("/network")} style={styles.exploreWrap} accessibilityRole="button">
-              <LinearGradient colors={[Colors.goldLight, Colors.champagne, Colors.gold]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.explore}>
-                <Text style={styles.exploreText}>Explore Network</Text>
-              </LinearGradient>
-            </Pressable>
-          </View>
+          <EmptyState
+            inline
+            icon="notifications-outline"
+            title="You’re all caught up!"
+            text="No new notifications at the moment. We’ll notify you about new connections, introductions, opportunities, events and more."
+            cta={{ label: "Explore Network", onPress: () => router.replace("/network") }}
+          />
         ) : null}
       </ScrollView>
     </View>

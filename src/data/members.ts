@@ -70,6 +70,9 @@ const PLACES: Record<string, { region: string; country: string; km: number }> = 
 };
 
 export const CITIES = Object.keys(PLACES);
+/** "Jaipur, Rajasthan" style label for a known city. */
+export const placeLabel = (city: string) => (PLACES[city] ? `${city}, ${PLACES[city].region}` : city);
+export const placeCountry = (city: string) => PLACES[city]?.country ?? "";
 export const COUNTRIES = ["India", "UAE", "Singapore", "USA"];
 export const INDUSTRIES = ["Technology", "Healthcare", "Manufacturing", "E-commerce", "Finance", "Real Estate", "Sustainability", "Education"];
 export const EXPERTISE = ["Strategy", "Marketing", "Operations", "Fundraising", "Sales", "Supply Chain", "Product", "Legal & Compliance"];
@@ -203,3 +206,8 @@ export function activeFilterCount(f: Filters) {
     (f.verifiedOnly ? 1 : 0)
   );
 }
+
+/** Shared by the application form and the profile Business tab. */
+export const INDIAN_CITIES = ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad", "Jaipur", "Surat", "Lucknow", "Indore"];
+export const STATES = ["Maharashtra", "Delhi", "Karnataka", "Telangana", "Tamil Nadu", "West Bengal", "Gujarat", "Rajasthan", "Uttar Pradesh", "Madhya Pradesh", "Haryana", "Punjab"];
+export const BUSINESS_TYPES = ["Proprietorship", "Partnership", "Private Limited", "Public Limited", "LLP", "Other"];

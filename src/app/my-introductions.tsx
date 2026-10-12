@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/empty-state";
 import { BackHeader, NetworkTabBar, PersonAvatar, StatusPill } from "@/components/intro-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { findMember } from "@/data/members";
@@ -44,8 +45,15 @@ export default function MyIntroductions() {
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
-        {items.length === 0 ? <Text style={styles.empty}>No {tab} introduction requests yet.</Text> : null}
+      <ScrollView contentContainerStyle={[styles.list, items.length === 0 && { flexGrow: 1 }]} showsVerticalScrollIndicator={false}>
+        {items.length === 0 ? (
+          <EmptyState
+            icon="people-outline"
+            title={tab === "sent" ? "No Requests Sent" : "No Requests Received"}
+            text={tab === "sent" ? "Ask a mutual connection to introduce you to someone you want to meet." : "When a member asks you for an introduction, it will show up here."}
+            cta={tab === "sent" ? { label: "Explore Network", onPress: () => router.navigate("/network") } : undefined}
+          />
+        ) : null}
         {items.map((r) => {
           const other = tab === "sent" ? r.target : r.requester;
           const m = findMember(other);

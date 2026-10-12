@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const STEPS = ["Check your email inbox", "Click on the verification link", "Come back to the app"];
@@ -12,7 +12,6 @@ const RESEND_SECONDS = 30;
 export default function VerifyEmail() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
   const { email } = useLocalSearchParams<{ email?: string }>();
   const [seconds, setSeconds] = useState(RESEND_SECONDS);
 
@@ -27,7 +26,7 @@ export default function VerifyEmail() {
       <StatusBar style="dark" />
       <Image
         source={require("../../assets/images/light-bg.png")}
-        style={[styles.bg, { width, height }]}
+        style={styles.bg}
         resizeMode="cover"
       />
       <ScrollView
@@ -84,7 +83,7 @@ export default function VerifyEmail() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
-  bg: { position: "absolute", top: 0, left: 0 },
+  bg: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" },
   scroll: { flexGrow: 1, paddingHorizontal: 24 },
   back: { paddingVertical: 8, alignSelf: "flex-start" },
   header: { alignItems: "center", marginTop: 24 },

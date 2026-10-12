@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/empty-state";
 import { PillTabs } from "@/components/event-ui";
 import { ScreenHeader } from "@/components/member-ui";
 import { PartnerLogo, PartnerRow } from "@/components/partner-ui";
@@ -56,7 +57,7 @@ export default function MyRedemptions() {
               </Pressable>
             ))
           ) : (
-            <Text style={styles.none}>You haven&apos;t redeemed any offers yet.</Text>
+            <EmptyState inline icon="gift-outline" title="No Offers Redeemed" text="Redeem partner offers and your history will appear here." cta={{ label: "Browse Partners", onPress: () => router.navigate("/partners") }} />
           )
         ) : saved.length ? (
           <View>
@@ -65,7 +66,7 @@ export default function MyRedemptions() {
             ))}
           </View>
         ) : (
-          <Text style={styles.none}>No saved offers. Tap the heart on a partner to save it.</Text>
+          <EmptyState inline icon="heart-outline" title="No Saved Offers" text="Tap the heart on a partner to save its offer for later." cta={{ label: "Browse Partners", onPress: () => router.navigate("/partners") }} />
         )}
       </ScrollView>
     </View>

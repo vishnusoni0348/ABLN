@@ -1,4 +1,5 @@
-import { GoldButton, NetworkTabBar, PersonAvatar } from "@/components/intro-ui";
+import { EmptyState } from "@/components/empty-state";
+import { NetworkTabBar, PersonAvatar } from "@/components/intro-ui";
 import { GOLD_BG, Tag } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { findMember } from "@/data/members";
@@ -85,17 +86,12 @@ export default function MyConnections() {
       </View>
 
       {connections.length === 0 ? (
-        <View style={styles.empty}>
-          <View style={styles.emptyHalo}>
-            <Ionicons name="people" size={74} color={Colors.gold} />
-            <View style={styles.plus}>
-              <Ionicons name="add" size={22} color={Colors.white} />
-            </View>
-          </View>
-          <Text style={styles.emptyTitle}>Start Building Your ABLN Network</Text>
-          <Text style={styles.emptyText}>You haven&apos;t connected with any members yet. Discover and connect with business leaders to grow together.</Text>
-          <GoldButton label="Discover Members" icon="search-outline" onPress={() => router.replace("/network")} style={styles.discover} />
-        </View>
+        <EmptyState
+          icon="people-outline"
+          title="Start Building Your ABLN Network"
+          text="You haven't connected with any members yet. Discover and connect with business leaders to grow together."
+          cta={{ label: "Discover Members", onPress: () => router.replace("/network") }}
+        />
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           <View style={styles.searchRow}>

@@ -1,6 +1,6 @@
 import { CARD_SHADOW, GOLD_BG, Tag } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
-import type { Category, Opportunity } from "@/data/opportunities";
+import type { Category, MineStatus, Opportunity } from "@/data/opportunities";
 import { toggleSaved, useOpportunities } from "@/lib/opportunity-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -257,3 +257,11 @@ const styles = StyleSheet.create({
   chipScrollWrap: { flexGrow: 0, marginHorizontal: -16 },
   chipScroll: { paddingHorizontal: 16, gap: 8 },
 });
+
+// Label and colours for each status of the user's own opportunities.
+export const STATUS_PILL: Record<MineStatus, { label: string; bg: string; fg: string }> = {
+  Active: { label: "Open", bg: "#DDF4E7", fg: Colors.success },
+  Pending: { label: "Pending", bg: "#FDEBC8", fg: Colors.goldDark },
+  Paused: { label: "Paused", bg: "#FDEBC8", fg: Colors.goldDark },
+  Closed: { label: "Closed", bg: "#FBDADA", fg: Colors.error },
+};

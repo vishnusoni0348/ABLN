@@ -18,6 +18,12 @@ export type Profile = {
   industry: string;
   website: string;
   bizType: string;
+  employees: string;
+  turnover: string;
+  pocName: string;
+  pocEmail: string;
+  pocDialCode: string;
+  pocMobile: string;
   bizAddress: string;
   bizState: string;
   bizCity: string;
@@ -25,6 +31,8 @@ export type Profile = {
   expertise: string[];
   lookingFor: string[];
   canOffer: string[];
+  productLink: string;
+  serviceLink: string;
   countries: string[];
   plan: string;
   validTill: string;
@@ -82,6 +90,12 @@ let state: State = {
     industry: "IT Services & Consulting",
     website: "www.truevalueinfosoft.com",
     bizType: "Private Limited",
+    employees: "11-50",
+    turnover: "₹1 Cr - ₹5 Cr",
+    pocName: "Rahul Sharma",
+    pocEmail: "rahul@truevalueinfosoft.com",
+    pocDialCode: "+91",
+    pocMobile: "98290 12345",
     bizAddress: "Plot 24, Malviya Nagar",
     bizState: "Rajasthan",
     bizCity: "Jaipur",
@@ -89,6 +103,8 @@ let state: State = {
     expertise: ["Web Development", "Mobile Apps", "AI Solutions", "Digital Transformation"],
     lookingFor: ["Business Partnerships", "IT Projects", "Investment Opportunities"],
     canOffer: ["Software Development", "AI & Automation", "IT Consulting"],
+    productLink: "",
+    serviceLink: "",
     countries: ["India", "USA", "UAE", "UK", "Singapore", "Germany"],
     plan: "Premium Member",
     validTill: "10 Oct 2026",

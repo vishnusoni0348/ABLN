@@ -76,8 +76,8 @@ export const placeCountry = (city: string) => PLACES[city]?.country ?? "";
 export const COUNTRIES = ["India", "UAE", "Singapore", "USA"];
 export const INDUSTRIES = ["Technology", "Healthcare", "Manufacturing", "E-commerce", "Finance", "Real Estate", "Sustainability", "Education"];
 export const EXPERTISE = ["Strategy", "Marketing", "Operations", "Fundraising", "Sales", "Supply Chain", "Product", "Legal & Compliance"];
-export const LOOKING_FOR = ["Partners", "Customers", "Investors", "Suppliers", "Mentorship", "Other"];
-export const CAN_OFFER = ["Products", "Services", "Expertise", "Investment", "Partnership", "Other"];
+export const LOOKING_FOR = ["Partners", "Customers", "Investors", "Suppliers", "Mentorship"];
+export const CAN_OFFER = ["Products", "Services", "Expertise", "Investment", "Partnership"];
 
 const TAGS_BY_INDUSTRY: Record<string, string[]> = {
   Technology: ["AI", "SaaS", "Business Growth", "Cloud"],
@@ -211,3 +211,5 @@ export function activeFilterCount(f: Filters) {
 export const INDIAN_CITIES = ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad", "Jaipur", "Surat", "Lucknow", "Indore"];
 export const STATES = ["Maharashtra", "Delhi", "Karnataka", "Telangana", "Tamil Nadu", "West Bengal", "Gujarat", "Rajasthan", "Uttar Pradesh", "Madhya Pradesh", "Haryana", "Punjab"];
 export const BUSINESS_TYPES = ["Proprietorship", "Partnership", "Private Limited", "Public Limited", "LLP", "Other"];
+export const EMPLOYEE_RANGES = ["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"];
+export const TURNOVER_RANGES = ["Below ₹1 Cr", "₹1 Cr - ₹5 Cr", "₹5 Cr - ₹25 Cr", "₹25 Cr - ₹100 Cr", "₹100 Cr - ₹500 Cr", "Above ₹500 Cr"];

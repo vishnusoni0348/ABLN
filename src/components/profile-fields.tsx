@@ -1,3 +1,4 @@
+import { SearchBox, showSearch } from "@/components/form-fields";
 import { BottomSheet } from "@/components/settings-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -55,16 +56,25 @@ export function TextBox({ label, icon, required, error, style, ...input }: TextB
 }
 
 function OptionSheet({ visible, title, options, value, onClose, onPick, render }: { visible: boolean; title: string; options: string[]; value?: string; onClose: () => void; onPick: (v: string) => void; render?: (o: string) => string }) {
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  const shown = q ? options.filter((o) => (render ? render(o) : o).toLowerCase().includes(q)) : options;
+  const close = () => {
+    setQuery("");
+    onClose();
+  };
   return (
-    <BottomSheet visible={visible} title={title} onClose={onClose}>
-      <ScrollView style={styles.sheetList} showsVerticalScrollIndicator={false}>
-        {options.map((o) => (
+    <BottomSheet visible={visible} title={title} onClose={close}>
+      {showSearch(options) ? <SearchBox value={query} onChangeText={setQuery} /> : null}
+      <ScrollView style={styles.sheetList} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        {!shown.length ? <Text style={styles.noResults}>No results found</Text> : null}
+        {shown.map((o) => (
           <Pressable
             key={o}
             style={styles.option}
             onPress={() => {
               onPick(o);
-              onClose();
+              close();
             }}
           >
             <Text style={[styles.optionText, (o === value || render?.(o) === value) && styles.optionOn]}>{render ? render(o) : o}</Text>
@@ -176,6 +186,7 @@ const styles = StyleSheet.create({
   flag: { fontSize: 16 },
   dialText: { color: Colors.navy, fontFamily: Fonts.medium, fontSize: 13 },
   sheetList: { maxHeight: 360 },
+  noResults: { color: Colors.textMuted, fontFamily: Fonts.regular, fontSize: 15, textAlign: "center", paddingVertical: 24 },
   option: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: Colors.border },
   optionText: { color: Colors.navy, fontFamily: Fonts.regular, fontSize: 16 },
   optionOn: { fontFamily: Fonts.bold },

@@ -1,3 +1,4 @@
+import { GoogleButton, OrDivider } from "@/components/google-button";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -100,6 +101,9 @@ export default function Signup() {
                 <Text style={styles.primaryText}>Continue</Text>
               </LinearGradient>
             </Pressable>
+
+            <OrDivider />
+            <GoogleButton onPress={() => router.replace("/application-intro")} />
 
             <View style={styles.loginRow}>
               <Text style={styles.loginText}>Already have an account? </Text>

@@ -402,6 +402,7 @@ export default function Application() {
                 icon="pricetag-outline"
                 required
                 placeholder="Add products or services"
+                allowOther
                 values={products}
                 options={PRODUCT_OPTIONS}
                 onChange={setProducts}
@@ -412,6 +413,7 @@ export default function Application() {
                 icon="people-outline"
                 required
                 placeholder="Select target customers"
+                allowOther
                 values={targets}
                 options={TARGET_CUSTOMERS}
                 onChange={setTargets}
@@ -422,6 +424,7 @@ export default function Application() {
                 optional
                 icon="star-outline"
                 placeholder="Add key highlights (e.g. awards, achievements, USP)"
+                allowOther
                 values={highlights}
                 options={HIGHLIGHTS}
                 onChange={setHighlights}

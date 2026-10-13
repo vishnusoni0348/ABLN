@@ -3,7 +3,7 @@ import { Avatar } from "@/components/member-ui";
 import { DateBox, PhoneBox, PickBox, TextBox } from "@/components/profile-fields";
 import { GoldButton, SegmentTabs, SettingsScreen } from "@/components/settings-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
-import { BUSINESS_TYPES, CAN_OFFER, CITIES, COUNTRIES, EXPERTISE, INDIAN_CITIES, INDUSTRIES, LOOKING_FOR, placeCountry, placeLabel, STATES } from "@/data/members";
+import { BUSINESS_TYPES, CAN_OFFER, CITIES, COUNTRIES, EMPLOYEE_RANGES, EXPERTISE, INDIAN_CITIES, INDUSTRIES, LOOKING_FOR, placeCountry, placeLabel, STATES, TURNOVER_RANGES } from "@/data/members";
 import { DIAL_CODES, GENDERS, updateProfile, useSettings } from "@/lib/profile-store";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -20,6 +20,7 @@ const TABS: { key: Tab; label: string; icon: ComponentProps<typeof Ionicons>["na
 
 const ABOUT_MAX = 500;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const URL_RE = /^(https?:\/\/)?([\w-]+\.)+[a-z]{2,}(:\d+)?(\/\S*)?$/i;
 const withCurrent = (options: string[], current: string[]) => [...options, ...current.filter((c) => !options.includes(c))];
 
 export default function EditProfile() {
@@ -41,12 +42,34 @@ export default function EditProfile() {
     if (form.mobile.replace(/\D/g, "").length < 10) next.mobile = "Enter a valid 10-digit mobile number";
     if (!form.city.trim()) next.city = "Location is required";
     if (!form.designation.trim()) next.designation = "Designation is required";
+    if (!form.pocName.trim()) next.pocName = "Contact person name is required";
+    if (!EMAIL_RE.test(form.pocEmail.trim())) next.pocEmail = "Enter a valid email address";
+    if (form.pocMobile.replace(/\D/g, "").length < 10) next.pocMobile = "Enter a valid 10-digit mobile number";
+    const offersProducts = form.canOffer.includes("Products");
+    const offersServices = form.canOffer.includes("Services");
+    if (offersProducts && form.productLink.trim() && !URL_RE.test(form.productLink.trim())) next.productLink = "Enter a valid link";
+    if (offersServices && form.serviceLink.trim() && !URL_RE.test(form.serviceLink.trim())) next.serviceLink = "Enter a valid link";
     setErrors(next);
     if (Object.keys(next).length) {
-      setTab(next.name || next.email || next.mobile || next.city ? "personal" : "business");
+      setTab(
+        next.name || next.email || next.mobile || next.city
+          ? "personal"
+          : next.productLink || next.serviceLink
+            ? "expertise"
+            : "business",
+      );
       return;
     }
-    updateProfile({ ...form, name: form.name.trim(), designation: form.designation.trim(), email: form.email.trim() });
+    updateProfile({
+      ...form,
+      name: form.name.trim(),
+      designation: form.designation.trim(),
+      email: form.email.trim(),
+      pocName: form.pocName.trim(),
+      pocEmail: form.pocEmail.trim(),
+      productLink: offersProducts ? form.productLink.trim() : "",
+      serviceLink: offersServices ? form.serviceLink.trim() : "",
+    });
     Alert.alert("Profile updated", "Your changes have been saved.", [{ text: "OK", onPress: () => router.back() }]);
   };
 
@@ -126,19 +149,40 @@ export default function EditProfile() {
           <Field label="Designation" icon="briefcase-outline" required value={form.designation} onChangeText={(v) => set("designation", v)} error={errors.designation} autoCapitalize="words" />
           <Select label="Industry" icon="layers-outline" placeholder="Select industry" value={form.industry} options={withCurrent(INDUSTRIES, [form.industry])} onChange={(v) => set("industry", v)} />
           <Select label="Business Type" icon="briefcase-outline" placeholder="Select business type" value={form.bizType} options={BUSINESS_TYPES} onChange={(v) => set("bizType", v)} />
+          <Select label="Number of Employees" icon="people-outline" placeholder="Select employee range" value={form.employees} options={EMPLOYEE_RANGES} onChange={(v) => set("employees", v)} />
+          <Select label="Annual Turnover" icon="cash-outline" placeholder="Select turnover range" value={form.turnover} options={TURNOVER_RANGES} onChange={(v) => set("turnover", v)} />
           <Field label="Website" icon="globe-outline" optional value={form.website} onChangeText={(v) => set("website", v)} keyboardType="url" autoCapitalize="none" autoCorrect={false} />
           <Field label="Business Address" icon="location-outline" value={form.bizAddress} onChangeText={(v) => set("bizAddress", v)} />
           <Select label="State" icon="map-outline" placeholder="Select state" value={form.bizState} options={STATES} onChange={(v) => set("bizState", v)} />
           <Select label="City" icon="location-outline" placeholder="Select city" value={form.bizCity} options={INDIAN_CITIES} onChange={(v) => set("bizCity", v)} />
+
+          <View style={styles.sectionHead}>
+            <View style={styles.sectionIcon}>
+              <Ionicons name="call" size={20} color={Colors.goldDark} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.sectionTitle}>Point of Contact (POC)</Text>
+              <Text style={styles.sectionSub}>Person members can reach for business enquiries</Text>
+            </View>
+          </View>
+          <TextBox label="Contact Person Name" icon="person-outline" required value={form.pocName} onChangeText={(v) => set("pocName", v)} error={errors.pocName} autoCapitalize="words" />
+          <TextBox label="Contact Email" icon="mail-outline" required value={form.pocEmail} onChangeText={(v) => set("pocEmail", v)} error={errors.pocEmail} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} />
+          <PhoneBox label="Contact Phone Number" required dialCode={form.pocDialCode} dialCodes={DIAL_CODES} onDialCode={(v) => set("pocDialCode", v)} value={form.pocMobile} onChangeText={(v) => set("pocMobile", v)} error={errors.pocMobile} />
         </View>
       ) : null}
 
       {tab === "expertise" ? (
         <View>
-          <MultiSelect label="Expertise" icon="ribbon-outline" placeholder="Select expertise" values={form.expertise} options={withCurrent(EXPERTISE, form.expertise)} onChange={(v) => set("expertise", v)} />
-          <MultiSelect label="Looking For" icon="search-outline" placeholder="What are you looking for?" values={form.lookingFor} options={withCurrent(LOOKING_FOR, form.lookingFor)} onChange={(v) => set("lookingFor", v)} />
-          <MultiSelect label="Can Offer" icon="gift-outline" placeholder="What can you offer?" values={form.canOffer} options={withCurrent(CAN_OFFER, form.canOffer)} onChange={(v) => set("canOffer", v)} />
-          <MultiSelect label="Countries" icon="earth-outline" placeholder="Countries you do business in" values={form.countries} options={withCurrent(COUNTRIES, form.countries)} onChange={(v) => set("countries", v)} />
+          <MultiSelect label="Expertise" icon="ribbon-outline" placeholder="Select expertise" allowOther values={form.expertise} options={withCurrent(EXPERTISE, form.expertise)} onChange={(v) => set("expertise", v)} />
+          <MultiSelect label="Looking For" icon="search-outline" placeholder="What are you looking for?" allowOther values={form.lookingFor} options={withCurrent(LOOKING_FOR, form.lookingFor)} onChange={(v) => set("lookingFor", v)} />
+          <MultiSelect label="Can Offer" icon="gift-outline" placeholder="What can you offer?" allowOther values={form.canOffer} options={withCurrent(CAN_OFFER, form.canOffer)} onChange={(v) => set("canOffer", v)} />
+          {form.canOffer.includes("Products") ? (
+            <Field label="Products Link" icon="link-outline" optional placeholder="https://yourcompany.com/products" value={form.productLink} onChangeText={(v) => set("productLink", v)} error={errors.productLink} keyboardType="url" autoCapitalize="none" autoCorrect={false} />
+          ) : null}
+          {form.canOffer.includes("Services") ? (
+            <Field label="Services Link" icon="link-outline" optional placeholder="https://yourcompany.com/services" value={form.serviceLink} onChangeText={(v) => set("serviceLink", v)} error={errors.serviceLink} keyboardType="url" autoCapitalize="none" autoCorrect={false} />
+          ) : null}
+          <MultiSelect label="Countries" icon="earth-outline" placeholder="Countries you do business in" allowOther values={form.countries} options={withCurrent(COUNTRIES, form.countries)} onChange={(v) => set("countries", v)} />
         </View>
       ) : null}
     </SettingsScreen>
@@ -153,7 +197,7 @@ const styles = StyleSheet.create({
   avatarWrap: { position: "absolute", left: 16, bottom: -52 },
   ring: { padding: 4, borderRadius: 60, borderWidth: 2, borderColor: Colors.gold, backgroundColor: Colors.white },
   camera: { position: "absolute", right: 2, bottom: 4, width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.navy, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: Colors.white },
-  sectionHead: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 4 },
+  sectionHead: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 16 },
   sectionIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#FEF3DC", alignItems: "center", justifyContent: "center" },
   sectionTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 17 },
   sectionSub: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 12, marginTop: 2 },

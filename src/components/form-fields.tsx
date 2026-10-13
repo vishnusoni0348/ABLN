@@ -6,6 +6,7 @@ import { ComponentProps, ReactNode, useState } from "react";
 import {
   Alert,
   Image,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
@@ -29,6 +30,38 @@ export function Label({ text, required, optional }: { text: string; required?: b
     </Text>
   );
 }
+
+const SEARCH_MIN_OPTIONS = 6;
+
+/** Case-insensitive substring filter used by the dropdown search boxes. */
+export const filterOptions = (options: string[], query: string) => {
+  const q = query.trim().toLowerCase();
+  return q ? options.filter((o) => o.toLowerCase().includes(q)) : options;
+};
+
+/** Search input shown at the top of long dropdown lists. */
+export function SearchBox({ value, onChangeText, placeholder = "Search" }: { value: string; onChangeText: (v: string) => void; placeholder?: string }) {
+  return (
+    <View style={styles.search}>
+      <Ionicons name="search-outline" size={20} color={Colors.textMuted} />
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={Colors.textMuted}
+        autoCorrect={false}
+        style={styles.searchInput}
+      />
+      {value ? (
+        <Pressable onPress={() => onChangeText("")} hitSlop={10} accessibilityLabel="Clear search">
+          <Ionicons name="close-circle" size={18} color={Colors.textMuted} />
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+export const showSearch = (options: string[]) => options.length > SEARCH_MIN_OPTIONS;
 
 type FieldProps = TextInputProps & {
   label: string;
@@ -88,7 +121,13 @@ export function Select({
   disabled,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const insets = useSafeAreaInsets();
+  const close = () => {
+    setOpen(false);
+    setQuery("");
+  };
+  const shown = filterOptions(options, query);
   return (
     <View style={styles.group}>
       <Label text={label} required={required} optional={optional} />
@@ -104,31 +143,35 @@ export function Select({
       </Pressable>
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)} />
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>{label}</Text>
-            <Pressable onPress={() => setOpen(false)} hitSlop={10}>
-              <Ionicons name="close" size={24} color={Colors.navy} />
-            </Pressable>
-          </View>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {options.map((o) => (
-              <Pressable
-                key={o}
-                style={styles.option}
-                onPress={() => {
-                  onChange(o);
-                  setOpen(false);
-                }}
-              >
-                <Text style={[styles.optionText, o === value && styles.optionOn]}>{o}</Text>
-                {o === value ? <Ionicons name="checkmark" size={20} color={Colors.goldDark} /> : null}
+      <Modal visible={open} transparent animationType="slide" onRequestClose={close}>
+        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <Pressable style={styles.backdrop} onPress={close} />
+          <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>{label}</Text>
+              <Pressable onPress={close} hitSlop={10}>
+                <Ionicons name="close" size={24} color={Colors.navy} />
               </Pressable>
-            ))}
-          </ScrollView>
-        </View>
+            </View>
+            {showSearch(options) ? <SearchBox value={query} onChangeText={setQuery} /> : null}
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              {shown.map((o) => (
+                <Pressable
+                  key={o}
+                  style={styles.option}
+                  onPress={() => {
+                    onChange(o);
+                    close();
+                  }}
+                >
+                  <Text style={[styles.optionText, o === value && styles.optionOn]}>{o}</Text>
+                  {o === value ? <Ionicons name="checkmark" size={20} color={Colors.goldDark} /> : null}
+                </Pressable>
+              ))}
+              {!shown.length ? <Text style={styles.noResults}>No results found</Text> : null}
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -212,13 +255,30 @@ export function MultiSelect({
   required,
   optional,
   error,
+  allowOther,
 }: Omit<SelectProps, "value" | "onChange" | "disabled"> & {
   values: string[];
   onChange: (v: string[]) => void;
+  /** Adds an "Other" row that reveals a free-text input for custom entries. */
+  allowOther?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [otherOpen, setOtherOpen] = useState(false);
+  const [otherText, setOtherText] = useState("");
+  const [query, setQuery] = useState("");
   const insets = useSafeAreaInsets();
+  const close = () => {
+    setOpen(false);
+    setQuery("");
+  };
+  const shown = filterOptions(options, query);
   const toggle = (o: string) => onChange(values.includes(o) ? values.filter((v) => v !== o) : [...values, o]);
+  const addOther = () => {
+    const text = otherText.trim();
+    if (!text) return;
+    if (!values.some((v) => v.toLowerCase() === text.toLowerCase())) onChange([...values, text]);
+    setOtherText("");
+  };
   return (
     <View style={styles.group}>
       <Label text={label} required={required} optional={optional} />
@@ -229,6 +289,23 @@ export function MultiSelect({
         </Text>
         <Ionicons name="chevron-down" size={22} color={Colors.navy} />
       </Pressable>
+      {allowOther && otherOpen ? (
+        <View style={styles.otherRow}>
+          <TextInput
+            value={otherText}
+            onChangeText={setOtherText}
+            onSubmitEditing={addOther}
+            returnKeyType="done"
+            placeholder={`Enter other ${label.toLowerCase()}`}
+            placeholderTextColor={Colors.textMuted}
+            autoCapitalize="words"
+            style={[styles.box, styles.otherInput]}
+          />
+          <Pressable onPress={addOther} disabled={!otherText.trim()} style={[styles.otherAdd, !otherText.trim() && { opacity: 0.5 }]}>
+            <Text style={styles.otherAddText}>Add</Text>
+          </Pressable>
+        </View>
+      ) : null}
       {values.length ? (
         <View style={styles.chips}>
           {values.map((v) => (
@@ -241,31 +318,47 @@ export function MultiSelect({
       ) : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)} />
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>{label}</Text>
-            <Pressable onPress={() => setOpen(false)} hitSlop={10}>
-              <Text style={styles.done}>Done</Text>
-            </Pressable>
-          </View>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {options.map((o) => {
-              const on = values.includes(o);
-              return (
-                <Pressable key={o} style={styles.option} onPress={() => toggle(o)}>
-                  <Text style={[styles.optionText, on && styles.optionOn]}>{o}</Text>
+      <Modal visible={open} transparent animationType="slide" onRequestClose={close}>
+        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <Pressable style={styles.backdrop} onPress={close} />
+          <View style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}>
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>{label}</Text>
+              <Pressable onPress={close} hitSlop={10}>
+                <Text style={styles.done}>Done</Text>
+              </Pressable>
+            </View>
+            {showSearch(options) ? <SearchBox value={query} onChangeText={setQuery} /> : null}
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              {shown.map((o) => {
+                const on = values.includes(o);
+                return (
+                  <Pressable key={o} style={styles.option} onPress={() => toggle(o)}>
+                    <Text style={[styles.optionText, on && styles.optionOn]}>{o}</Text>
+                    <Ionicons
+                      name={on ? "checkbox" : "square-outline"}
+                      size={22}
+                      color={on ? Colors.goldDark : Colors.textMuted}
+                    />
+                  </Pressable>
+                );
+              })}
+              {allowOther && (!query.trim() || "other".includes(query.trim().toLowerCase())) ? (
+                <Pressable style={styles.option} onPress={() => setOtherOpen((o) => !o)}>
+                  <Text style={[styles.optionText, otherOpen && styles.optionOn]}>Other</Text>
                   <Ionicons
-                    name={on ? "checkbox" : "square-outline"}
+                    name={otherOpen ? "checkbox" : "square-outline"}
                     size={22}
-                    color={on ? Colors.goldDark : Colors.textMuted}
+                    color={otherOpen ? Colors.goldDark : Colors.textMuted}
                   />
                 </Pressable>
-              );
-            })}
-          </ScrollView>
-        </View>
+              ) : null}
+              {!shown.length && !(allowOther && "other".includes(query.trim().toLowerCase())) ? (
+                <Text style={styles.noResults}>No results found</Text>
+              ) : null}
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -328,6 +421,7 @@ export function UploadCard({
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   group: { marginTop: 16 },
   label: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 15, marginBottom: 8 },
   req: { color: Colors.error },
@@ -370,6 +464,31 @@ const styles = StyleSheet.create({
   },
   optionText: { color: Colors.navy, fontFamily: Fonts.regular, fontSize: 16 },
   optionOn: { fontFamily: Fonts.bold },
+  search: {
+    height: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 14,
+    marginBottom: 6,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: "#F8F9FC",
+  },
+  searchInput: { flex: 1, color: Colors.navy, fontFamily: Fonts.regular, fontSize: 15, paddingVertical: 0 },
+  noResults: { color: Colors.textMuted, fontFamily: Fonts.regular, fontSize: 15, textAlign: "center", paddingVertical: 24 },
+  otherRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10 },
+  otherInput: { flex: 1, color: Colors.navy, fontFamily: Fonts.regular, fontSize: 16 },
+  otherAdd: {
+    height: 54,
+    paddingHorizontal: 20,
+    borderRadius: Radius.md,
+    backgroundColor: Colors.navy,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  otherAddText: { color: Colors.white, fontFamily: Fonts.bold, fontSize: 15 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
   chip: {
     flexDirection: "row",

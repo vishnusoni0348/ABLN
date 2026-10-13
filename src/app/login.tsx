@@ -1,5 +1,6 @@
+import { GoogleButton, OrDivider } from "@/components/google-button";
 import { Colors, Fonts, Radius } from "@/constants/theme";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -18,14 +19,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type IconName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 type Mode = "mobile" | "email";
-
-const FEATURES: { icon: IconName; title: string; desc: string }[] = [
-  { icon: "account-group-outline", title: "Connect", desc: "with verified\nbusiness leaders" },
-  { icon: "bullseye-arrow", title: "Explore", desc: "new business\nopportunities" },
-  { icon: "chart-box-outline", title: "Grow", desc: "together in a trusted\ncommunity" },
-];
 
 export default function Login() {
   const router = useRouter();
@@ -56,7 +50,7 @@ export default function Login() {
 
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8 }]}
+          contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24 }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -136,28 +130,10 @@ export default function Login() {
               </LinearGradient>
             </Pressable>
 
+            <OrDivider />
+            <GoogleButton onPress={() => router.replace("/home")} />
           </View>
 
-          <View style={styles.spacer} />
-
-          <LinearGradient
-            colors={["rgba(6,27,51,0)", Colors.royalNavy, Colors.deepNavy]}
-            locations={[0, 0.5, 1]}
-            style={[styles.features, { paddingBottom: insets.bottom + 24 }]}
-          >
-            {FEATURES.map((f, i) => (
-              <View key={f.title} style={styles.featureWrap}>
-                {i > 0 && <View style={styles.featureSep} />}
-                <View style={styles.feature}>
-                  <View style={styles.iconCircle}>
-                    <MaterialCommunityIcons name={f.icon} size={28} color={Colors.champagne} />
-                  </View>
-                  <Text style={styles.featureTitle}>{f.title}</Text>
-                  <Text style={styles.featureDesc}>{f.desc}</Text>
-                </View>
-              </View>
-            ))}
-          </LinearGradient>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -250,31 +226,6 @@ const styles = StyleSheet.create({
   },
   primaryText: { color: Colors.white, fontFamily: Fonts.bold, fontSize: 20 },
   arrow: { position: "absolute", right: 22 },
-  spacer: { flex: 1, minHeight: 24 },
-  features: { flexDirection: "row", paddingHorizontal: 12, paddingTop: 72 },
-  featureWrap: { flex: 1, flexDirection: "row" },
-  featureSep: { width: 1, height: 70, backgroundColor: "rgba(232,198,106,0.5)", alignSelf: "center" },
-  feature: { flex: 1, alignItems: "center", paddingHorizontal: 4 },
-  iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "rgba(6,27,51,0.85)",
-    borderWidth: 1.5,
-    borderColor: "rgba(232,198,106,0.55)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
-  },
-  featureTitle: { color: Colors.white, fontFamily: Fonts.bold, fontSize: 17 },
-  featureDesc: {
-    color: Colors.white,
-    fontFamily: Fonts.regular,
-    fontSize: 13,
-    lineHeight: 18,
-    textAlign: "center",
-    marginTop: 2,
-  },
   pressed: { opacity: 0.85 },
   btnDisabled: { opacity: 0.55 },
 });

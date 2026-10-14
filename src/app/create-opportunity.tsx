@@ -3,7 +3,7 @@ import { usePickImage } from "@/components/form-fields";
 import { GOLD_GRADIENT, OppThumb } from "@/components/opportunity-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { CATEGORIES, type Category, type MyOpportunity, OPP_INDUSTRIES, OPP_LOCATIONS, type OppForm, VALUE_RANGES } from "@/data/opportunities";
-import { addMine, updateMine, useOpportunities } from "@/lib/opportunity-store";
+import { addMine, OPPORTUNITY_LIMIT, updateMine, useOpportunities } from "@/lib/opportunity-store";
 import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -361,20 +361,33 @@ export default function CreateOpportunity() {
     .filter(Boolean);
   const deadline = parseDate(f.deadline);
   const today = new Date();
+  const used = mine.length;
+  const remaining = Math.max(0, OPPORTUNITY_LIMIT - used);
+  const limitReached = remaining === 0;
 
   const footer =
     step === 4 ? (
       <View style={[styles.footer, styles.footerCol, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-        <Pressable onPress={() => router.replace("/my-opportunities")} style={({ pressed }) => pressed && styles.pressed}>
+        <Pressable onPress={() => router.replace(editing ? "/my-opportunities" : { pathname: "/my-opportunities", params: { created: "1" } })} style={({ pressed }) => pressed && styles.pressed}>
           <LinearGradient colors={GOLD_GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.primary}>
             <Text style={styles.primaryText}>View My Opportunities</Text>
           </LinearGradient>
         </Pressable>
         {editing ? null : (
-          <Pressable onPress={reset} style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}>
-            <Text style={styles.secondaryText}>Create Another Opportunity</Text>
+          <Pressable
+            onPress={reset}
+            disabled={limitReached}
+            accessibilityState={{ disabled: limitReached }}
+            style={({ pressed }) => [styles.secondary, limitReached && styles.secondaryOff, pressed && styles.pressed]}
+          >
+            <Text style={[styles.secondaryText, limitReached && styles.secondaryTextOff]}>Create Another Opportunity</Text>
           </Pressable>
         )}
+        {!editing && limitReached ? (
+          <Pressable onPress={() => router.push("/choose-plan")} style={({ pressed }) => [styles.secondary, pressed && styles.pressed]} accessibilityRole="button">
+            <Text style={styles.secondaryText}>Upgrade Plan to Create More</Text>
+          </Pressable>
+        ) : null}
       </View>
     ) : step === 0 ? (
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
@@ -618,6 +631,28 @@ export default function CreateOpportunity() {
 
             {editing ? null : (
             <>
+            <View style={styles.limitBox}>
+              <View style={styles.limitHead}>
+                <Text style={styles.reviewTitle}>Opportunity Limits</Text>
+                {limitReached ? (
+                  <Pressable onPress={() => router.push("/choose-plan")} hitSlop={8} accessibilityRole="button">
+                    <Text style={styles.upgradeLink}>Upgrade Plan</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+              <View style={styles.limitStats}>
+                <View style={styles.limitStat}>
+                  <Text style={styles.limitNum}>{`${used} / ${OPPORTUNITY_LIMIT}`}</Text>
+                  <Text style={styles.reviewText}>Opportunities Used</Text>
+                </View>
+                <View style={styles.limitStat}>
+                  <Text style={[styles.limitNum, { color: limitReached ? Colors.error : Colors.success }]}>{remaining}</Text>
+                  <Text style={styles.reviewText}>Opportunities Remaining</Text>
+                </View>
+              </View>
+              {limitReached ? <Text style={styles.limitWarn}>You have reached your plan limit. Upgrade to create more opportunities.</Text> : null}
+            </View>
+
             <View style={styles.reviewBox}>
               <Ionicons name="hourglass-outline" size={30} color={Colors.goldDark} />
               <View style={styles.flex}>
@@ -763,6 +798,15 @@ const styles = StyleSheet.create({
   primaryText: { color: Colors.white, fontFamily: Fonts.bold, fontSize: 14 },
   secondary: { height: 48, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.gold, alignItems: "center", justifyContent: "center", backgroundColor: Colors.white },
   secondaryText: { color: Colors.goldDark, fontFamily: Fonts.bold, fontSize: 14 },
+  secondaryOff: { borderColor: Colors.border, backgroundColor: "#F3F4F8" },
+  secondaryTextOff: { color: Colors.textMuted },
+  limitBox: { alignSelf: "stretch", gap: 10, padding: 14, borderRadius: Radius.md, backgroundColor: "#FEF6E3" },
+  limitHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  upgradeLink: { color: Colors.goldDark, fontFamily: Fonts.bold, fontSize: 12 },
+  limitStats: { flexDirection: "row" },
+  limitStat: { flex: 1, alignItems: "center", gap: 2 },
+  limitNum: { color: Colors.goldDark, fontFamily: Fonts.bold, fontSize: 24 },
+  limitWarn: { color: Colors.error, fontFamily: Fonts.regular, fontSize: 11, textAlign: "center" },
 
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)" },
   sheet: { backgroundColor: Colors.white, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 16, paddingTop: 10, maxHeight: "70%" },

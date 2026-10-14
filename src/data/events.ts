@@ -1,3 +1,6 @@
+import type { ImageSourcePropType } from "react-native";
+import { MEMBERS, type Member } from "@/data/members";
+
 // Sample events until the events API is wired up.
 export const EVENT_CATEGORIES = ["Networking", "Workshop", "Conference", "Webinar", "Meetup", "Panel Discussion", "Business Dinner", "Training", "Other"] as const;
 export type EventCategory = (typeof EVENT_CATEGORIES)[number];
@@ -116,10 +119,12 @@ export function dateRangeLabel(f: Pick<EventFilters, "dateFrom" | "dateTo">) {
   return `${f.dateFrom ? formatEventDate(f.dateFrom) : "Any"} – ${f.dateTo ? formatEventDate(f.dateTo) : "Any"}`;
 }
 
+export type EventSpeaker = { name: string; role: string; topic: string; photo?: ImageSourcePropType };
+
 export type EventDetails = {
   about: string;
   agenda: { time: string; title: string }[];
-  speakers: { name: string; role: string }[];
+  speakers: EventSpeaker[];
   organiser: { name: string; about: string };
   audience: string;
   dress: string;
@@ -139,9 +144,9 @@ export function eventDetails(e: AppEvent): EventDetails {
       { time: "+2 hr", title: "Open networking & Q&A" },
     ],
     speakers: [
-      { name: "Rahul Agarwal", role: "CEO & Founder, TechVision" },
-      { name: "Priya Sharma", role: "Director, Growth Partners" },
-      { name: "Amit Jain", role: "Managing Partner, Jain & Co." },
+      { name: "Rahul Agarwal", role: "CEO & Founder, TechVision", topic: "Scaling Businesses in the Age of AI", photo: require("../../assets/images/member-rahul.png") },
+      { name: "Priya Sharma", role: "Director, Growth Partners", topic: "Building Partnerships That Last", photo: require("../../assets/images/member-priya.png") },
+      { name: "Amit Jain", role: "Managing Partner, Jain & Co.", topic: "Funding Your Next Stage of Growth", photo: require("../../assets/images/member-amit.png") },
     ],
     organiser: { name: "ABLN Events Team", about: "Agarwal Business Leaders Network hosts curated events to connect members across industries." },
     audience: "Business Owners, Entrepreneurs",
@@ -166,4 +171,12 @@ export function calendarUrl(e: AppEvent) {
   const fmt = (d: Date) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
   const dates = slot ? `&dates=${fmt(slot[0])}/${fmt(slot[1])}` : "";
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title)}&location=${encodeURIComponent(e.location)}${dates}`;
+}
+
+// Members attending an event. Sample data: a stable slice of the directory per event until the API provides it.
+export function eventAttendees(e: AppEvent): Member[] {
+  const pool = MEMBERS.filter((m) => !m.restricted);
+  const start = (Number(e.id.slice(1)) * 7) % pool.length;
+  const count = Math.min(e.going, pool.length);
+  return Array.from({ length: count }, (_, i) => pool[(start + i) % pool.length]);
 }

@@ -1,7 +1,8 @@
 import { EventThumb, GoingRow, SaveEventButton } from "@/components/event-ui";
+import { Avatar } from "@/components/member-ui";
 import { GOLD_GRADIENT } from "@/components/opportunity-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
-import { EVENTS, type AppEvent, availability, calendarUrl, eventDetails, formatEventDate, isRegistrationOpen } from "@/data/events";
+import { EVENTS, type AppEvent, availability, calendarUrl, eventAttendees, eventDetails, formatEventDate, isRegistrationOpen } from "@/data/events";
 import { cancelRegistration, useEvents } from "@/lib/event-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -50,6 +51,8 @@ export default function EventDetails() {
   }
 
   const d = eventDetails(e);
+  const attendees = eventAttendees(e);
+  const openAttendees = () => router.push({ pathname: "/event-attendees", params: { id: e.id } });
   const registered = registrations.some((r) => r.eventId === e.id);
   const open = isRegistrationOpen(e);
   const share = () => Share.share({ message: `${e.title} — ${formatEventDate(e.date)}, ${e.time}, ${e.location}` });
@@ -119,6 +122,20 @@ export default function EventDetails() {
         </View>
 
         <View style={styles.sheet}>
+          {attendees.length ? (
+            <Pressable style={styles.attending} onPress={openAttendees} accessibilityRole="button" accessibilityLabel={`${e.going} members attending. View all`}>
+              <View style={styles.strip}>
+                {attendees.slice(0, 5).map((m, i) => (
+                  <View key={m.name} style={[styles.stripAvatar, i > 0 && styles.stripOverlap]}>
+                    <Avatar name={m.name} photo={m.photo} size={32} />
+                  </View>
+                ))}
+              </View>
+              <Text style={styles.attendingText}>{e.going > 5 ? `+${e.going - 5} attending` : "Attending"}</Text>
+              <Text style={styles.viewAll}>View all</Text>
+              <Ionicons name="chevron-forward" size={16} color={Colors.goldDark} />
+            </Pressable>
+          ) : null}
           <View style={styles.tabs}>
             {TABS.map((t) => (
               <Pressable key={t} style={[styles.tab, tab === t && styles.tabOn]} onPress={() => setTab(t)} accessibilityRole="tab" accessibilityState={{ selected: tab === t }}>
@@ -137,6 +154,26 @@ export default function EventDetails() {
                 <Info icon="briefcase-outline" label="Target Audience" value={d.audience} />
                 <Info icon="shirt-outline" label="Dress Code" value={d.dress} />
               </View>
+              {d.speakers.length ? (
+                <View style={styles.aboutSpeakers}>
+                  <View style={styles.aboutSpeakersHead}>
+                    <Text style={styles.paneTitle}>Speakers</Text>
+                    <Pressable onPress={() => setTab("Speakers")} hitSlop={8} accessibilityRole="button">
+                      <Text style={styles.viewAll}>View all</Text>
+                    </Pressable>
+                  </View>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.speakerCards}>
+                    {d.speakers.map((s) => (
+                      <Pressable key={s.name} style={styles.speakerCard} onPress={() => setTab("Speakers")} accessibilityRole="button" accessibilityLabel={`${s.name}, ${s.role}`}>
+                        <Avatar name={s.name} photo={s.photo} size={56} />
+                        <Text style={styles.speakerCardName} numberOfLines={1}>{s.name}</Text>
+                        <Text style={styles.infoLabel} numberOfLines={2}>{s.role}</Text>
+                        <Text style={styles.speakerCardTopic} numberOfLines={2}>{s.topic}</Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                </View>
+              ) : null}
               <Text style={styles.seatsNote}>{e.when === "Past" ? "This event has ended." : `${availability(e)} · ${e.registered} / ${e.seats} seats booked`}</Text>
             </View>
           ) : null}
@@ -158,12 +195,14 @@ export default function EventDetails() {
               <Text style={styles.paneTitle}>Speakers</Text>
               {d.speakers.map((s) => (
                 <View key={s.name} style={styles.speaker}>
-                  <View style={styles.speakerAvatar}>
-                    <Text style={styles.speakerInitial}>{s.name[0]}</Text>
-                  </View>
+                  <Avatar name={s.name} photo={s.photo} size={56} />
                   <View style={styles.flex}>
                     <Text style={styles.agendaTitle}>{s.name}</Text>
                     <Text style={styles.infoLabel}>{s.role}</Text>
+                    <View style={styles.topic}>
+                      <Ionicons name="mic-outline" size={13} color={Colors.goldDark} />
+                      <Text style={styles.topicText}>{s.topic}</Text>
+                    </View>
                   </View>
                 </View>
               ))}
@@ -246,9 +285,23 @@ const styles = StyleSheet.create({
   agendaRow: { flexDirection: "row", gap: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#EEF1F5" },
   agendaTime: { width: 70, color: Colors.goldDark, fontFamily: Fonts.semiBold, fontSize: 12 },
   agendaTitle: { color: Colors.navy, fontFamily: Fonts.semiBold, fontSize: 13 },
-  speaker: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 6 },
-  speakerAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#FDF0D2", alignItems: "center", justifyContent: "center" },
-  speakerInitial: { color: Colors.goldDark, fontFamily: Fonts.bold, fontSize: 16 },
+  speaker: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#EEF1F5" },
+  topic: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 6 },
+  topicText: { flex: 1, color: Colors.goldDark, fontFamily: Fonts.semiBold, fontSize: 12 },
+
+  aboutSpeakers: { gap: 10 },
+  aboutSpeakersHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  speakerCards: { gap: 12 },
+  speakerCard: { width: 150, gap: 4, padding: 12, borderRadius: Radius.md, borderWidth: 1, borderColor: "#EEF1F5" },
+  speakerCardName: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 13, marginTop: 6 },
+  speakerCardTopic: { color: Colors.goldDark, fontFamily: Fonts.semiBold, fontSize: 11, marginTop: 2 },
+
+  attending: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#EEF1F5" },
+  strip: { flexDirection: "row" },
+  stripAvatar: { borderRadius: 18, borderWidth: 2, borderColor: Colors.white },
+  stripOverlap: { marginLeft: -10 },
+  attendingText: { flex: 1, color: Colors.navy, fontFamily: Fonts.semiBold, fontSize: 13 },
+  viewAll: { color: Colors.goldDark, fontFamily: Fonts.semiBold, fontSize: 12 },
 
   footer: { paddingHorizontal: 16, paddingTop: 12, flexDirection: "row", gap: 12, borderTopWidth: 1, borderTopColor: "#EEF1F5", backgroundColor: Colors.white },
   cta: { height: 50, borderRadius: Radius.md, alignItems: "center", justifyContent: "center" },

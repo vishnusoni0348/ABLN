@@ -52,7 +52,7 @@ export function EmptyState({ icon, title, text, steps, cta, inline }: Props) {
 
 const styles = StyleSheet.create({
   empty: { alignItems: "center", gap: 12 },
-  fill: { flex: 1, justifyContent: "center", paddingBottom: 40 },
+  fill: { flex: 1, justifyContent: "center", paddingHorizontal: 20, paddingBottom: 40 },
   inline: { paddingVertical: 36 },
   halo: { width: 132, height: 132, borderRadius: 66, backgroundColor: "#FEF6E3", alignItems: "center", justifyContent: "center", marginBottom: 4 },
   haloInner: { width: 88, height: 88, borderRadius: 44, backgroundColor: Colors.white, alignItems: "center", justifyContent: "center", ...CARD_SHADOW },

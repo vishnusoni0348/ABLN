@@ -20,6 +20,29 @@ const SEED_INCOMING: IncomingRequest[] = [
   },
 ];
 
+// Sample network graph until the connections API is wired up: who each direct connection knows.
+const NETWORK: Record<string, string[]> = {
+  "Rahul Agarwal": ["Sneha Bansal", "Karan Agarwal", "Ritika Jain"],
+  "Amit Goyal": ["Karan Agarwal", "Sneha Bansal"],
+  "Priya Mittal": ["Ritika Jain", "Ankit Sharma"],
+  "Vikram Sethi": ["Neha Sharma"],
+};
+
+export type SecondDegree = { name: string; via: string[] };
+
+/** Members connected to you only through your direct connections, with the mutual connections that link you. */
+export function secondDegree(connections: Connection[]): SecondDegree[] {
+  const direct = new Set(connections.map((c) => c.name));
+  const map = new Map<string, string[]>();
+  for (const c of connections) {
+    for (const name of NETWORK[c.name] ?? []) {
+      if (direct.has(name)) continue;
+      map.set(name, [...(map.get(name) ?? []), c.name]);
+    }
+  }
+  return [...map].map(([name, via]) => ({ name, via }));
+}
+
 type State = { connections: Connection[]; incoming: IncomingRequest[]; sent: Record<string, Date> };
 
 let state: State = { connections: SEED_CONNECTIONS, incoming: SEED_INCOMING, sent: {} };

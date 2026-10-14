@@ -21,6 +21,7 @@ export type Member = {
   photo?: ImageSourcePropType;
   about?: string;
   markets?: string[];
+  phone?: string;
   // Limited visibility: only basic info is shown until the viewer connects.
   restricted?: boolean;
 };
@@ -59,17 +60,26 @@ export const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 export const PAGE_SIZE = 20;
 
-const PLACES: Record<string, { region: string; country: string; km: number }> = {
-  Jaipur: { region: "Rajasthan", country: "India", km: 0 },
-  Delhi: { region: "India", country: "India", km: 280 },
-  Mumbai: { region: "India", country: "India", km: 1150 },
-  Bangalore: { region: "India", country: "India", km: 1850 },
-  Dubai: { region: "UAE", country: "UAE", km: 2700 },
-  Singapore: { region: "Singapore", country: "Singapore", km: 5000 },
-  "New York": { region: "USA", country: "USA", km: 12000 },
+const PLACES: Record<string, { region: string; country: string; km: number; lat: number; lng: number }> = {
+  Jaipur: { region: "Rajasthan", country: "India", km: 0, lat: 26.91, lng: 75.79 },
+  Delhi: { region: "India", country: "India", km: 280, lat: 28.61, lng: 77.21 },
+  Mumbai: { region: "India", country: "India", km: 1150, lat: 19.08, lng: 72.88 },
+  Bangalore: { region: "India", country: "India", km: 1850, lat: 12.97, lng: 77.59 },
+  Dubai: { region: "UAE", country: "UAE", km: 2700, lat: 25.2, lng: 55.27 },
+  Singapore: { region: "Singapore", country: "Singapore", km: 5000, lat: 1.35, lng: 103.82 },
+  "New York": { region: "USA", country: "USA", km: 12000, lat: 40.71, lng: -74.0 },
 };
 
 export const CITIES = Object.keys(PLACES);
+/** Great-circle distance in km between two known cities (Infinity if either is unknown). */
+export function distanceKm(a: string, b: string) {
+  const p = PLACES[a];
+  const q = PLACES[b];
+  if (!p || !q) return Infinity;
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const h = Math.sin(rad(q.lat - p.lat) / 2) ** 2 + Math.cos(rad(p.lat)) * Math.cos(rad(q.lat)) * Math.sin(rad(q.lng - p.lng) / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(h));
+}
 /** "Jaipur, Rajasthan" style label for a known city. */
 export const placeLabel = (city: string) => (PLACES[city] ? `${city}, ${PLACES[city].region}` : city);
 export const placeCountry = (city: string) => PLACES[city]?.country ?? "";
@@ -120,6 +130,8 @@ function make(s: Seed, i: number): Member {
     canOffer: s.canOffer ?? [CAN_OFFER[(i + 1) % 6], CAN_OFFER[(i + 3) % 6]],
     type: s.type ?? (i % 5 === 0 ? "Business" : "Individual"),
     verified: s.verified ?? i % 3 !== 1,
+    // Sample number until the members API supplies real contact details.
+    phone: s.restricted ? undefined : `+91 98${String(10000000 + ((i + 1) * 7919321) % 90000000)}`,
   };
 }
 

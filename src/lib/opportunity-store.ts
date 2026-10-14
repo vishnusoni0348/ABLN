@@ -3,6 +3,9 @@ import { useSyncExternalStore } from "react";
 
 export const OFFERS = ["Partnership", "Investment", "Distribution", "Expertise", "Customers", "Other"] as const;
 
+// How many opportunities the current plan allows; replace with the plan's value once the API is wired up.
+export const OPPORTUNITY_LIMIT = 10;
+
 // An expression of interest the user sent to someone else's opportunity.
 export type InterestStatus = "Pending" | "Discussion" | "Accepted" | "Declined";
 export type Interest = { id: string; oppId: string; why: string; offers: string[]; extra: string; submittedAt: number; updatedAt?: number; status: InterestStatus };

@@ -4,10 +4,10 @@ import { GOLD_GRADIENT, Meta, OppThumb } from "@/components/opportunity-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import type { MineStatus, MyOpportunity } from "@/data/opportunities";
 import { BottomSheet, MenuRow } from "@/components/settings-ui";
-import { removeMine, setMineStatus, useOpportunities } from "@/lib/opportunity-store";
+import { OPPORTUNITY_LIMIT, removeMine, setMineStatus, useOpportunities } from "@/lib/opportunity-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -29,6 +29,7 @@ function MineCard({ o }: { o: MyOpportunity }) {
     fn();
   };
   const manage = (action: "pause" | "close") => router.push({ pathname: "/manage-opportunity", params: { id: o.id, action } });
+  const track = () => router.push({ pathname: "/opportunity-status", params: { id: o.id } });
   const resume = () => {
     setMineStatus(o.id, "Active");
     router.push({ pathname: "/opportunity-status-updated", params: { id: o.id, action: "resume", from: "Paused" } });
@@ -48,9 +49,10 @@ function MineCard({ o }: { o: MyOpportunity }) {
             <Text style={styles.cardTitle} numberOfLines={2}>
               {o.title}
             </Text>
-            <View style={[styles.badge, { backgroundColor: badge.bg }]}>
+            <Pressable style={[styles.badge, styles.badgeRow, { backgroundColor: badge.bg }]} onPress={track} accessibilityRole="button" accessibilityLabel={`Track status, currently ${o.status}`}>
               <Text style={[styles.badgeText, { color: badge.fg }]}>{o.status}</Text>
-            </View>
+              <Ionicons name="chevron-forward" size={10} color={badge.fg} />
+            </Pressable>
           </View>
           <View style={styles.tagRow}>
             <Tag>{o.category}</Tag>
@@ -77,6 +79,7 @@ function MineCard({ o }: { o: MyOpportunity }) {
           {o.title}
         </Text>
         <MenuRow icon="eye-outline" title="View Details" sub="See how members see it" onPress={run(() => router.push({ pathname: "/opportunity-details", params: { id: o.id } }))} />
+        <MenuRow icon="time-outline" title="Track Status" sub="See where your opportunity stands" onPress={run(track)} />
         <MenuRow icon="create-outline" title="Edit Opportunity" sub="Update details, timeline and contact" onPress={run(() => router.push({ pathname: "/create-opportunity", params: { id: o.id } }))} />
         {o.status === "Active" ? <MenuRow icon="pause-circle-outline" title="Pause Opportunity" sub="Temporarily hide it from members" onPress={run(() => manage("pause"))} /> : null}
         {o.status === "Paused" ? <MenuRow icon="play-circle-outline" title="Resume Opportunity" sub="Make it visible to members again" onPress={run(resume)} /> : null}
@@ -93,6 +96,11 @@ export default function MyOpportunities() {
   const pending = incoming.filter((r) => !r.decision);
   const [tab, setTab] = useState<MineStatus>("Active");
   const list = mine.filter((m) => m.status === tab);
+  const { created } = useLocalSearchParams<{ created?: string }>();
+  const [bannerOff, setBannerOff] = useState(false);
+  const used = mine.length;
+  const remaining = Math.max(0, OPPORTUNITY_LIMIT - used);
+  const limitReached = remaining === 0;
 
   return (
     <View style={styles.container}>
@@ -113,6 +121,48 @@ export default function MyOpportunities() {
             </Pressable>
           }
         />
+
+        {created && !bannerOff ? (
+          <View style={styles.banner}>
+            <View style={styles.bannerCheck}>
+              <Ionicons name="checkmark" size={20} color={Colors.white} />
+            </View>
+            <View style={styles.flex}>
+              <Text style={styles.bannerTitle}>Opportunity created successfully!</Text>
+              <Text style={styles.bannerSub}>{limitReached ? "You have no opportunities remaining." : `You have ${remaining} ${remaining === 1 ? "opportunity" : "opportunities"} remaining.`}</Text>
+            </View>
+            <Pressable onPress={() => setBannerOff(true)} hitSlop={10} accessibilityRole="button" accessibilityLabel="Dismiss">
+              <Ionicons name="close" size={22} color={Colors.navy} />
+            </Pressable>
+          </View>
+        ) : null}
+
+        <View style={styles.limit}>
+          <View style={styles.limitIcon}>
+            <Ionicons name="briefcase-outline" size={22} color={Colors.goldDark} />
+          </View>
+          <View style={styles.flex}>
+            <View style={styles.limitHead}>
+              <Text style={styles.limitTitle}>Opportunity Limits</Text>
+              <Pressable onPress={() => router.push("/choose-plan")} style={styles.upgradeBtn} accessibilityRole="button">
+                <Text style={styles.upgradeText}>Upgrade Plan</Text>
+              </Pressable>
+            </View>
+            <View style={styles.limitStats}>
+              <Text style={styles.limitUsed}>
+                <Text style={styles.limitBig}>{used}</Text>
+                {` / ${OPPORTUNITY_LIMIT} Used`}
+              </Text>
+              <Text style={styles.limitUsed}>
+                <Text style={[styles.limitBig, { color: limitReached ? Colors.error : Colors.success }]}>{remaining}</Text>
+                {" Remaining"}
+              </Text>
+            </View>
+            <View style={styles.track}>
+              <View style={[styles.fill, { width: `${Math.min(100, (used / OPPORTUNITY_LIMIT) * 100)}%` }]} />
+            </View>
+          </View>
+        </View>
 
         <View style={styles.tabs}>
           {TABS.map((t) => {
@@ -157,6 +207,22 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 16, gap: 14 },
   add: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
 
+  banner: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: Radius.md, backgroundColor: "#E3F6EC" },
+  bannerCheck: { width: 34, height: 34, borderRadius: 17, backgroundColor: Colors.success, alignItems: "center", justifyContent: "center" },
+  bannerTitle: { color: Colors.success, fontFamily: Fonts.bold, fontSize: 14 },
+  bannerSub: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 12, marginTop: 2 },
+  limit: { flexDirection: "row", gap: 12, padding: 14, borderRadius: Radius.md, backgroundColor: "#FEF6E3" },
+  limitIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#FBEBC4", alignItems: "center", justifyContent: "center" },
+  limitHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  limitTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 15 },
+  upgradeBtn: { borderWidth: 1, borderColor: Colors.gold, borderRadius: Radius.sm, paddingHorizontal: 10, paddingVertical: 5 },
+  upgradeText: { color: Colors.goldDark, fontFamily: Fonts.semiBold, fontSize: 11 },
+  limitStats: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginTop: 8 },
+  limitUsed: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 12 },
+  limitBig: { color: Colors.goldDark, fontFamily: Fonts.bold, fontSize: 24 },
+  track: { height: 8, borderRadius: 4, backgroundColor: "#E9E6DD", marginTop: 8, overflow: "hidden" },
+  fill: { height: 8, borderRadius: 4, backgroundColor: Colors.gold },
+
   tabs: { flexDirection: "row", gap: 8 },
   tab: { flex: 1, height: 38, borderRadius: 19, backgroundColor: "#F1F4FA", alignItems: "center", justifyContent: "center" },
   tabOn: { backgroundColor: Colors.gold },
@@ -170,6 +236,7 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
   cardTitle: { flex: 1, color: Colors.navy, fontFamily: Fonts.bold, fontSize: 13, lineHeight: 18 },
   badge: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3 },
+  badgeRow: { flexDirection: "row", alignItems: "center", gap: 2 },
   badgeText: { fontFamily: Fonts.bold, fontSize: 10 },
   tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 8 },
   actions: { flexDirection: "row", gap: 10, marginTop: 12 },

@@ -9,7 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ComponentProps, ReactNode, useState } from "react";
-import { Alert, Image, Modal, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Image, Linking, Modal, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -79,6 +79,17 @@ function InfoCard({ icon, tint, title, lines, onPress, style }: { icon: IconName
   );
 }
 
+function QuickAction({ icon, label, onPress }: { icon: IconName; label: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.quick, pressed && styles.pressed]} accessibilityRole="button" accessibilityLabel={label}>
+      <View style={styles.quickIcon}>
+        <Ionicons name={icon} size={20} color={BLUE} />
+      </View>
+      <Text style={styles.quickText} numberOfLines={1}>{label}</Text>
+    </Pressable>
+  );
+}
+
 function Header({ onMore }: { onMore: () => void }) {
   return (
     <>
@@ -117,6 +128,11 @@ export default function MemberProfile() {
     activeIntro ? router.push({ pathname: "/introduction-details", params: { id: activeIntro.id } }) : router.push({ pathname: "/request-introduction", params: { name: member.name } });
   const share = () => Share.share({ message: `${member.name} - ${member.role}, ${member.company} on ABLN` }).catch(() => {});
   const closeSheet = () => setSheet(false);
+  const contact = (scheme: "tel" | "sms") => {
+    if (!member.phone) return Alert.alert("Contact unavailable", `${member.name} hasn't shared a phone number.`);
+    Linking.openURL(`${scheme}:${member.phone.replace(/\s/g, "")}`).catch(() => Alert.alert("Couldn't open", "This device can't place calls or send messages."));
+  };
+  const meet = () => router.push({ pathname: "/schedule-meeting", params: { name: member.name } });
   const send = () => {
     if (!isRequested) {
       toggleRequest(member.name);
@@ -196,13 +212,13 @@ export default function MemberProfile() {
       {member.restricted ? (
         <RestrictedProfile member={member} top={insets.top} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onMore={() => setSheet(true)} />
       ) : (
-        <FullProfile member={member} top={insets.top} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onShare={share} onMore={() => setSheet(true)} />
+        <FullProfile member={member} top={insets.top} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onShare={share} onMore={() => setSheet(true)} onCall={() => contact("tel")} onMessage={() => contact("sms")} onMeet={meet} />
       )}
     </View>
   );
 }
 
-function FullProfile({ member: m, top, requested, onConnect, onIntro, introLabel, onShare, onMore }: { member: Member; top: number; requested: boolean; onConnect: () => void; onIntro: () => void; introLabel: string; onShare: () => void; onMore: () => void }) {
+function FullProfile({ member: m, top, requested, onConnect, onIntro, introLabel, onShare, onMore, onCall, onMessage, onMeet }: { member: Member; top: number; requested: boolean; onConnect: () => void; onIntro: () => void; introLabel: string; onShare: () => void; onMore: () => void; onCall: () => void; onMessage: () => void; onMeet: () => void }) {
   const [city] = m.location.split(", ");
   const about = m.about ?? `${m.role} at ${m.company}, working in ${m.industry}. Open to collaborations, partnerships and new opportunities.`;
   const markets = m.markets ?? [m.country];
@@ -248,6 +264,12 @@ function FullProfile({ member: m, top, requested, onConnect, onIntro, introLabel
             {m.tags.map((t) => (
               <Tag key={t}>{t}</Tag>
             ))}
+          </View>
+
+          <View style={styles.quickActions}>
+            <QuickAction icon="call-outline" label="Call" onPress={onCall} />
+            <QuickAction icon="chatbubble-ellipses-outline" label="Message" onPress={onMessage} />
+            <QuickAction icon="calendar-outline" label="Schedule Meeting" onPress={onMeet} />
           </View>
 
           <Text style={styles.h2}>About</Text>
@@ -388,6 +410,11 @@ const styles = StyleSheet.create({
   locRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
   loc: { color: Colors.goldDark, fontFamily: Fonts.regular, fontSize: 12 },
   tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 12 },
+
+  quickActions: { flexDirection: "row", gap: 10, marginTop: 16 },
+  quick: { flex: 1, alignItems: "center", gap: 6, paddingVertical: 10, paddingHorizontal: 4, borderRadius: Radius.md, borderWidth: 1, borderColor: "#EEF1F5", backgroundColor: Colors.white },
+  quickIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#EAF1FC", alignItems: "center", justifyContent: "center" },
+  quickText: { color: Colors.navy, fontFamily: Fonts.semiBold, fontSize: 11 },
 
   h2: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 15, marginTop: 20 },
   about: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 13, lineHeight: 19, marginTop: 6 },

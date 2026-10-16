@@ -51,6 +51,27 @@ export function GoldButton({ label, onPress, disabled, style }: { label: string;
   );
 }
 
+/** Compact gold action for the header's right slot. */
+export function HeaderSave({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="Save" style={styles.headerSave}>
+      <Text style={styles.headerSaveText}>Save</Text>
+    </Pressable>
+  );
+}
+
+export function InfoBanner({ children, title }: { children: ReactNode; title?: string }) {
+  return (
+    <View style={styles.banner}>
+      <Ionicons name="information-circle" size={20} color="#2F6FED" />
+      <View style={{ flex: 1 }}>
+        {title ? <Text style={styles.bannerTitle}>{title}</Text> : null}
+        <Text style={styles.bannerText}>{children}</Text>
+      </View>
+    </View>
+  );
+}
+
 export function SolidButton({ label, onPress, disabled, color = Colors.error, style }: { label: string; onPress: () => void; disabled?: boolean; color?: string; style?: StyleProp<ViewStyle> }) {
   return (
     <Pressable onPress={onPress} disabled={disabled} accessibilityRole="button" accessibilityState={{ disabled }} style={[styles.btn, { backgroundColor: color }, disabled && { opacity: 0.5 }, style]}>
@@ -100,7 +121,7 @@ export function ToggleRow({ icon, title, sub, value, onChange }: { icon: IconNam
       <IconCircle icon={icon} />
       <View style={styles.rowText}>
         <Text style={styles.rowTitle}>{title}</Text>
-        <Text style={styles.rowSub} numberOfLines={1}>{sub}</Text>
+        <Text style={styles.rowSub} numberOfLines={2}>{sub}</Text>
       </View>
       <Switch
         value={value}
@@ -206,6 +227,11 @@ export function SuccessDialog({ visible, title, message, reference, actionLabel 
 }
 
 const styles = StyleSheet.create({
+  headerSave: { backgroundColor: Colors.gold, borderRadius: Radius.md, paddingHorizontal: 18, height: 38, alignItems: "center", justifyContent: "center" },
+  headerSaveText: { color: Colors.white, fontFamily: Fonts.bold, fontSize: 14 },
+  banner: { flexDirection: "row", gap: 10, backgroundColor: "#EAF1FD", borderRadius: Radius.md, padding: 14, alignItems: "flex-start" },
+  bannerTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 13, marginBottom: 2 },
+  bannerText: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 13, lineHeight: 19 },
   dialogWrap: { alignItems: "center", justifyContent: "center", paddingHorizontal: 28 },
   dialog: { width: "100%", maxWidth: 360, backgroundColor: Colors.white, borderRadius: Radius.xl, paddingHorizontal: 22, paddingTop: 26, paddingBottom: 22, alignItems: "center", gap: 10 },
   dialogHalo: { width: 88, height: 88, borderRadius: 44, backgroundColor: "#E6F6EF", alignItems: "center", justifyContent: "center", marginBottom: 6 },

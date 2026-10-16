@@ -1,7 +1,7 @@
 import { BusinessCardView } from "@/components/business-card";
 import { ScreenHeader } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
-import { setCard, useBusinessCard, VISIBILITY_OPTIONS, Visibility } from "@/lib/card-store";
+import { setCard, useBusinessCard, useSharedCard, VISIBILITY_OPTIONS, Visibility } from "@/lib/card-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function CardVisibility() {
   const insets = useSafeAreaInsets();
   const card = useBusinessCard();
+  const shared = useSharedCard();
   const [choice, setChoice] = useState<Visibility>(card.visibility);
 
   const save = () => {
@@ -25,7 +26,7 @@ export default function CardVisibility() {
       <StatusBar style="dark" />
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24 }]} showsVerticalScrollIndicator={false}>
         <ScreenHeader title="Card Visibility" />
-        <BusinessCardView card={card} compact />
+        <BusinessCardView card={shared} compact />
 
         <View>
           <Text style={styles.h}>Profile Visibility</Text>

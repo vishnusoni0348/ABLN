@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from "react";
 import type { ImageSourcePropType } from "react-native";
-import type { Visibility } from "@/lib/card-store";
 
 export type Profile = {
   memberId: string;
@@ -28,6 +27,7 @@ export type Profile = {
   bizState: string;
   bizCity: string;
   region: string;
+  chapter: string;
   expertise: string[];
   lookingFor: string[];
   canOffer: string[];
@@ -40,14 +40,22 @@ export type Profile = {
   cover?: ImageSourcePropType;
 };
 
+export type ProfileVisibility = "public" | "members" | "connections" | "private";
+
 export type PrivacySettings = {
-  visibility: Visibility;
+  visibility: ProfileVisibility;
+  postVisibility: ProfileVisibility;
+  showInSearch: boolean;
+  hideProfilePicture: boolean;
   showEmail: boolean;
   showPhone: boolean;
   showCompany: boolean;
   showJobTitle: boolean;
   showWebsite: boolean;
   showLocation: boolean;
+  dbcShowMobile: boolean;
+  dbcShowEmail: boolean;
+  dbcShowChapter: boolean;
 };
 
 export type NotificationPrefs = {
@@ -100,6 +108,7 @@ let state: State = {
     bizState: "Rajasthan",
     bizCity: "Jaipur",
     region: "Jaipur, Rajasthan",
+    chapter: "Jaipur Chapter",
     expertise: ["Web Development", "Mobile Apps", "AI Solutions", "Digital Transformation"],
     lookingFor: ["Business Partnerships", "IT Projects", "Investment Opportunities"],
     canOffer: ["Software Development", "AI & Automation", "IT Consulting"],
@@ -110,7 +119,7 @@ let state: State = {
     validTill: "10 Oct 2026",
     photo: require("../../assets/images/avatar-user.png"),
   },
-  privacy: { visibility: "members", showEmail: true, showPhone: false, showCompany: true, showJobTitle: true, showWebsite: true, showLocation: true },
+  privacy: { visibility: "members", postVisibility: "members", showInSearch: true, hideProfilePicture: false, showEmail: true, showPhone: false, showCompany: true, showJobTitle: true, showWebsite: true, showLocation: true, dbcShowMobile: true, dbcShowEmail: true, dbcShowChapter: true },
   notifications: {
     newConnections: true,
     messages: true,

@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { useSettings } from "./profile-store";
 import type { ImageSourcePropType } from "react-native";
 
 export type Visibility = "public" | "members" | "private";
@@ -10,6 +11,9 @@ export type BusinessCard = {
   location: string;
   tags: string[];
   about: string;
+  chapter?: string;
+  phone?: string;
+  email?: string;
   visibility: Visibility;
   photo?: ImageSourcePropType;
 };
@@ -22,6 +26,9 @@ let state: BusinessCard = {
   location: "Jaipur, Rajasthan, India",
   tags: ["Technology", "AI", "Business Growth"],
   about: "Building technology solutions that create real business impact through innovation and collaboration.",
+  chapter: "Jaipur Chapter",
+  phone: "+91 98765 43210",
+  email: "rahul@agarwaltech.com",
   visibility: "members",
   photo: require("../../assets/images/member-rahul.png"),
 };
@@ -40,6 +47,18 @@ export function useBusinessCard() {
     },
     () => state,
   );
+}
+
+/** Own card as others see it: phone, email and chapter follow the Digital Business Card privacy toggles. */
+export function useSharedCard(): BusinessCard {
+  const card = useBusinessCard();
+  const { privacy } = useSettings();
+  return {
+    ...card,
+    phone: privacy.dbcShowMobile ? card.phone : undefined,
+    email: privacy.dbcShowEmail ? card.email : undefined,
+    chapter: privacy.dbcShowChapter ? card.chapter : undefined,
+  };
 }
 
 export const cardLink = (c: BusinessCard) => `https://abln.in/m/${c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;

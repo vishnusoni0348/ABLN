@@ -1,7 +1,7 @@
 import { BusinessCardView } from "@/components/business-card";
 import { ScreenHeader } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
-import { cardLink, useBusinessCard } from "@/lib/card-store";
+import { cardLink, useSharedCard } from "@/lib/card-store";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
@@ -14,7 +14,7 @@ type Opt = { icon: keyof typeof Ionicons.glyphMap; label: string; bg: string; co
 
 export default function ShareCard() {
   const insets = useSafeAreaInsets();
-  const card = useBusinessCard();
+  const card = useSharedCard();
   const link = cardLink(card);
   const msg = `Connect with ${card.name} (${card.role}, ${card.company}) on ABLN: ${link}`;
 
@@ -43,7 +43,7 @@ export default function ShareCard() {
       <StatusBar style="dark" />
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24 }]} showsVerticalScrollIndicator={false}>
         <ScreenHeader title="Share Business Card" />
-        <BusinessCardView card={card} compact />
+        <BusinessCardView card={card} />
 
         <Text style={styles.h}>Share via</Text>
         <View style={styles.grid}>

@@ -2,7 +2,7 @@ import { BusinessCardView } from "@/components/business-card";
 import { ScreenHeader } from "@/components/member-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { findMember } from "@/data/members";
-import { BusinessCard, cardLink, useBusinessCard } from "@/lib/card-store";
+import { BusinessCard, cardLink, useSharedCard } from "@/lib/card-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -23,7 +23,7 @@ function Action({ icon, label, onPress }: { icon: keyof typeof Ionicons.glyphMap
 
 export default function BusinessCardScreen() {
   const insets = useSafeAreaInsets();
-  const own = useBusinessCard();
+  const own = useSharedCard();
   const { name } = useLocalSearchParams<{ name?: string }>();
   const member = name && name !== own.name ? findMember(name) : undefined;
   const mine = !member;
@@ -54,7 +54,7 @@ export default function BusinessCardScreen() {
         </View>
 
         {mine ? (
-          <Pressable onPress={() => soon("Edit business card")} accessibilityRole="button">
+          <Pressable onPress={() => router.push("/edit-profile")} accessibilityRole="button">
             <LinearGradient colors={[Colors.goldLight, Colors.champagne, Colors.gold]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.edit}>
               <Text style={styles.editText}>Edit Business Card</Text>
             </LinearGradient>

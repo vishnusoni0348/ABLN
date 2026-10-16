@@ -82,9 +82,9 @@ export function SolidButton({ label, onPress, disabled, color = Colors.error, st
 
 export function OutlineBtn({ label, onPress, color = Colors.navy, icon, style }: { label: string; onPress: () => void; color?: string; icon?: IconName; style?: StyleProp<ViewStyle> }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" style={[styles.btn, styles.outline, { borderColor: color }, style]}>
+    <Pressable onPress={onPress} accessibilityRole="button" style={[styles.btn, styles.outline, { paddingHorizontal: 10 }, { borderColor: color }, style]}>
       {icon ? <Ionicons name={icon} size={18} color={color} /> : null}
-      <Text style={[styles.outlineText, { color }]}>{label}</Text>
+      <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={[styles.outlineText, { color, flexShrink: 1 }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -101,7 +101,7 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
-export function MenuRow({ icon, title, sub, onPress, value, danger }: { icon: IconName; title: string; sub?: string; onPress: () => void; value?: string; danger?: boolean }) {
+export function MenuRow({ icon, title, sub, onPress, value, danger, badge }: { icon: IconName; title: string; sub?: string; onPress: () => void; value?: string; danger?: boolean; badge?: string }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}>
       <IconCircle icon={icon} color={danger ? Colors.error : Colors.navy} />
@@ -109,6 +109,11 @@ export function MenuRow({ icon, title, sub, onPress, value, danger }: { icon: Ic
         <Text style={[styles.rowTitle, danger && { color: Colors.error }]}>{title}</Text>
         {sub ? <Text style={styles.rowSub} numberOfLines={1}>{sub}</Text> : null}
       </View>
+      {badge ? (
+        <View style={styles.rowBadge}>
+          <Text style={styles.rowBadgeText}>{badge}</Text>
+        </View>
+      ) : null}
       {value ? <Text style={styles.rowValue}>{value}</Text> : null}
       <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
     </Pressable>
@@ -256,6 +261,8 @@ const styles = StyleSheet.create({
   rowText: { flex: 1, minWidth: 0 },
   rowTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 14 },
   rowSub: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 12, marginTop: 2 },
+  rowBadge: { backgroundColor: "#FBF1D6", borderRadius: 10, paddingHorizontal: 9, paddingVertical: 3 },
+  rowBadgeText: { color: Colors.goldDark, fontFamily: Fonts.bold, fontSize: 11 },
   rowValue: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 12 },
   radioCard: { borderWidth: 1, borderColor: "#EEF1F5", shadowOpacity: 0, elevation: 0 },
   radioCardOn: { borderColor: Colors.gold, backgroundColor: SOFT_GOLD },

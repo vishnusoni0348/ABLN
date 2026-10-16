@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 
 const BLUE = "#2F6FDE";
+const PURPLE = "#6C4BC8";
 
 type Degree = "1st" | "2nd";
 
@@ -257,7 +258,10 @@ export default function MyConnections() {
             rows.map(({ c, m }) => (
               <View key={c.name} style={styles.card}>
                 <Pressable style={styles.row} onPress={() => openProfile(c.name)} accessibilityRole="button" accessibilityLabel={`View ${c.name}'s profile`}>
-                  <Avatar name={c.name} photo={m?.photo} size={64} />
+                  <View>
+                    <Avatar name={c.name} photo={m?.photo} size={76} radius={20} />
+                    <View style={styles.online} />
+                  </View>
                   <View style={styles.info}>
                     <View style={styles.nameRow}>
                       <Text style={styles.name} numberOfLines={1}>
@@ -270,20 +274,22 @@ export default function MyConnections() {
                         <Text style={styles.role} numberOfLines={1}>
                           {m.role}
                         </Text>
-                        <Text style={styles.role} numberOfLines={1}>
+                        <Text style={styles.company} numberOfLines={1}>
                           {m.company}
                         </Text>
-                        <View style={styles.meta}>
-                          <Ionicons name="location-outline" size={12} color={Colors.textSecondary} />
-                          <Text style={styles.metaText} numberOfLines={1}>
-                            {m.location}
-                          </Text>
-                        </View>
-                        <View style={styles.meta}>
-                          <Ionicons name="people-outline" size={12} color={Colors.goldDark} />
-                          <Text style={[styles.metaText, { color: Colors.goldDark }]} numberOfLines={1}>
-                            {m.city} Chapter
-                          </Text>
+                        <View style={styles.metaRow}>
+                          <View style={[styles.meta, styles.metaLoc]}>
+                            <Ionicons name="location-outline" size={12} color={Colors.textSecondary} />
+                            <Text style={[styles.metaText, styles.metaFit]}>
+                              {m.location}
+                            </Text>
+                          </View>
+                          <View style={styles.meta}>
+                            <Ionicons name="people-outline" size={12} color={Colors.goldDark} />
+                            <Text style={[styles.metaText, styles.metaChapter]}>
+                              {m.city} Chapter
+                            </Text>
+                          </View>
                         </View>
                       </>
                     ) : null}
@@ -299,7 +305,7 @@ export default function MyConnections() {
                   </View>
                   <View style={styles.side}>
                     <View style={[styles.degree, degree === "2nd" && styles.degree2]}>
-                      <Text style={[styles.degreeText, degree === "2nd" && styles.degreeText2]}>{degree} · {degree === "1st" ? "Direct" : "Mutual"}</Text>
+                      <Text style={[styles.degreeText, degree === "2nd" && styles.degreeText2]}>{degree} • {degree === "1st" ? "Direct" : "Mutual"}</Text>
                     </View>
                     {degree === "1st" ? (
                       <Pressable hitSlop={8} onPress={() => setMenuFor(c.name)} accessibilityLabel={`More options for ${c.name}`}>
@@ -325,9 +331,9 @@ export default function MyConnections() {
                     <Ionicons name="call-outline" size={16} color={Colors.goldDark} />
                     <Text style={[styles.actionText, { color: Colors.goldDark }]}>Call</Text>
                   </Pressable>
-                  <Pressable style={({ pressed }) => [styles.action, styles.actionBlue, pressed && styles.pressed]} onPress={() => contact(m, "sms")} accessibilityRole="button" accessibilityLabel={`Message ${c.name}`}>
-                    <Ionicons name="chatbubble-ellipses-outline" size={16} color={BLUE} />
-                    <Text style={[styles.actionText, { color: BLUE }]}>Message</Text>
+                  <Pressable style={({ pressed }) => [styles.action, styles.actionPurple, pressed && styles.pressed]} onPress={() => contact(m, "sms")} accessibilityRole="button" accessibilityLabel={`Message ${c.name}`}>
+                    <Ionicons name="chatbubble-ellipses-outline" size={16} color={PURPLE} />
+                    <Text style={[styles.actionText, { color: PURPLE }]}>Message</Text>
                   </Pressable>
                   <Pressable style={({ pressed }) => [styles.action, styles.actionBlue, pressed && styles.pressed]} onPress={() => router.push({ pathname: "/schedule-meeting", params: { name: c.name } })} accessibilityRole="button" accessibilityLabel={`Schedule a meeting with ${c.name}`}>
                     <Ionicons name="calendar-outline" size={16} color={BLUE} />
@@ -375,9 +381,16 @@ const styles = StyleSheet.create({
   meta: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
   metaText: { flex: 1, color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 11 },
   actions: { flexDirection: "row", gap: 10, marginTop: 12 },
-  action: { flex: 1, height: 40, borderRadius: Radius.sm, borderWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: Colors.white },
-  actionCall: { borderColor: Colors.gold },
-  actionBlue: { borderColor: BLUE },
+  action: { flex: 1, height: 44, borderRadius: Radius.md, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
+  actionCall: { backgroundColor: "#FFF3E0" },
+  actionBlue: { backgroundColor: "#E6EEFC" },
+  actionPurple: { backgroundColor: "#EFE9FB" },
+  online: { position: "absolute", right: -2, bottom: -2, width: 14, height: 14, borderRadius: 7, backgroundColor: Colors.success, borderWidth: 2, borderColor: Colors.white },
+  company: { color: Colors.textSecondary, fontFamily: Fonts.medium, fontSize: 12, marginTop: 2 },
+  metaRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", columnGap: 10, rowGap: 2, marginTop: 4 },
+  metaLoc: { marginTop: 0 },
+  metaFit: { flex: 0 },
+  metaChapter: { color: Colors.goldDark, flex: 0 },
   actionText: { fontFamily: Fonts.semiBold, fontSize: 13 },
 
   menuHead: { flexDirection: "row", alignItems: "center", gap: 12, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: "#EEF1F5" },

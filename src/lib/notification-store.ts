@@ -22,6 +22,8 @@ export type AppNotification = {
   detail: string;
   // Set for connection requests awaiting a response; opens the Connection Request screen.
   requestId?: string;
+  // Set for notifications that open a specific screen instead of the detail view.
+  route?: string;
 };
 
 export const KIND_LABEL: Record<NotificationKind, string> = {
@@ -34,6 +36,25 @@ export const KIND_LABEL: Record<NotificationKind, string> = {
 
 // Sample content until the notifications API is wired up.
 const SEED: AppNotification[] = [
+  {
+    id: "n7",
+    kind: "connections",
+    title: "Amit Gupta",
+    body: "viewed your profile.",
+    time: "2 hours ago",
+    group: "Today",
+    read: false,
+    icon: "eye-outline",
+    person: {
+      name: "Amit Gupta",
+      role: "CEO & Co-Founder",
+      company: "Gupta Industries",
+      location: "Delhi, India",
+      tags: [],
+    },
+    route: "/profile-views",
+    detail: "Amit Gupta viewed your profile. See everyone who viewed your profile in the last 30 days.",
+  },
   {
     id: "n6",
     kind: "connections",
@@ -137,8 +158,8 @@ function set(items: AppNotification[]) {
   listeners.forEach((l) => l());
 }
 
-export function addNotification(n: Pick<AppNotification, "title" | "body" | "detail" | "person">) {
-  const item: AppNotification = { ...n, id: `n${Date.now()}`, kind: "introductions", time: "Just now", group: "Today", read: false, icon: "hand-left-outline" };
+export function addNotification(n: Pick<AppNotification, "title" | "body" | "detail"> & Partial<Pick<AppNotification, "person" | "kind" | "icon" | "route">>) {
+  const item: AppNotification = { kind: "introductions", icon: "hand-left-outline", ...n, id: `n${Date.now()}`, time: "Just now", group: "Today", read: false };
   set([item, ...state.items]);
 }
 

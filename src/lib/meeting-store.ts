@@ -1,4 +1,7 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSyncExternalStore } from "react";
+
+import { addNotification } from "@/lib/notification-store";
 
 export type MeetingType = "virtual" | "in-person" | "phone";
 
@@ -55,12 +58,29 @@ function hash(s: string) {
   return h >>> 0;
 }
 
+const STORAGE_KEY = "abln.meetings";
+
 let meetings: Meeting[] = [];
 const listeners = new Set<() => void>();
 
 function emit() {
   listeners.forEach((l) => l());
 }
+
+function persist() {
+  AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(meetings)).catch(() => {});
+}
+
+// Restore saved meetings on launch; anything booked before this resolves is kept.
+AsyncStorage.getItem(STORAGE_KEY)
+  .then((raw) => {
+    if (!raw) return;
+    const saved: Meeting[] = (JSON.parse(raw) as (Omit<Meeting, "start"> & { start: string })[]).map((m) => ({ ...m, start: new Date(m.start) }));
+    const ids = new Set(meetings.map((m) => m.id));
+    meetings = [...meetings, ...saved.filter((m) => !ids.has(m.id))];
+    emit();
+  })
+  .catch(() => {});
 
 /**
  * Slots the member is free on `day`. Until a real availability API exists this is
@@ -89,7 +109,24 @@ export function scheduleMeeting(m: Omit<Meeting, "id" | "minutes">) {
   const meeting: Meeting = { ...m, id: `m${Date.now()}`, minutes: MEETING_MINUTES };
   meetings = [meeting, ...meetings];
   emit();
+  persist();
+  addNotification({
+    kind: "events",
+    icon: "calendar-outline",
+    title: "Meeting scheduled",
+    body: `with ${meeting.name} on ${formatLong(meeting.start)}, ${formatClock(meeting.start)}.`,
+    detail: `Your ${MEETING_TYPES.find((t) => t.key === meeting.type)?.label ?? "meeting"} with ${meeting.name} is set for ${formatLong(meeting.start)}, ${formatRange(meeting.start, meeting.minutes)}.`,
+    route: `/meeting-scheduled?id=${meeting.id}`,
+  });
   return meeting;
+}
+
+export const isUpcoming = (m: Meeting, now = Date.now()) => m.start.getTime() + m.minutes * 60000 > now;
+
+export function cancelMeeting(id: string) {
+  meetings = meetings.filter((m) => m.id !== id);
+  emit();
+  persist();
 }
 
 export function findMeeting(id?: string) {

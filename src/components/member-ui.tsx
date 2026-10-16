@@ -34,8 +34,8 @@ export function ConnectButton({ requested, onPress, style }: { requested: boolea
   );
 }
 
-export function Avatar({ name, photo, size = 56 }: { name: string; photo?: ImageSourcePropType; size?: number }) {
-  const box = { width: size, height: size, borderRadius: size / 2 };
+export function Avatar({ name, photo, size = 56, radius }: { name: string; photo?: ImageSourcePropType; size?: number; radius?: number }) {
+  const box = { width: size, height: size, borderRadius: radius ?? size / 2 };
   if (photo) return <Image source={photo} style={box} />;
   const letters = name
     .split(" ")

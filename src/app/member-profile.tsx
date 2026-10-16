@@ -212,13 +212,13 @@ export default function MemberProfile() {
       {member.restricted ? (
         <RestrictedProfile member={member} top={insets.top} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onMore={() => setSheet(true)} />
       ) : (
-        <FullProfile member={member} top={insets.top} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onShare={share} onMore={() => setSheet(true)} onCall={() => contact("tel")} onMessage={() => contact("sms")} onMeet={meet} />
+        <FullProfile member={member} top={insets.top} connected={connections.some((c) => c.name === member.name)} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onShare={share} onMore={() => setSheet(true)} onCall={() => contact("tel")} onMessage={() => contact("sms")} onMeet={meet} />
       )}
     </View>
   );
 }
 
-function FullProfile({ member: m, top, requested, onConnect, onIntro, introLabel, onShare, onMore, onCall, onMessage, onMeet }: { member: Member; top: number; requested: boolean; onConnect: () => void; onIntro: () => void; introLabel: string; onShare: () => void; onMore: () => void; onCall: () => void; onMessage: () => void; onMeet: () => void }) {
+function FullProfile({ member: m, top, connected, requested, onConnect, onIntro, introLabel, onShare, onMore, onCall, onMessage, onMeet }: { member: Member; top: number; connected: boolean; requested: boolean; onConnect: () => void; onIntro: () => void; introLabel: string; onShare: () => void; onMore: () => void; onCall: () => void; onMessage: () => void; onMeet: () => void }) {
   const [city] = m.location.split(", ");
   const about = m.about ?? `${m.role} at ${m.company}, working in ${m.industry}. Open to collaborations, partnerships and new opportunities.`;
   const markets = m.markets ?? [m.country];
@@ -266,11 +266,13 @@ function FullProfile({ member: m, top, requested, onConnect, onIntro, introLabel
             ))}
           </View>
 
-          <View style={styles.quickActions}>
-            <QuickAction icon="call-outline" label="Call" onPress={onCall} />
-            <QuickAction icon="chatbubble-ellipses-outline" label="Message" onPress={onMessage} />
-            <QuickAction icon="calendar-outline" label="Schedule Meeting" onPress={onMeet} />
-          </View>
+          {connected ? (
+            <View style={styles.quickActions}>
+              <QuickAction icon="call-outline" label="Call" onPress={onCall} />
+              <QuickAction icon="chatbubble-ellipses-outline" label="Message" onPress={onMessage} />
+              <QuickAction icon="calendar-outline" label="Schedule Meeting" onPress={onMeet} />
+            </View>
+          ) : null}
 
           <Text style={styles.h2}>About</Text>
           <Text style={styles.about}>{about}</Text>

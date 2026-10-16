@@ -47,6 +47,18 @@ export default function RootLayout() {
           }}
         />
       )}
+      {/* Solid white behind the gesture navigation bar so it looks the same on every screen. */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: insets.bottom,
+          backgroundColor: Colors.white,
+        }}
+      />
     </>
   );
 }

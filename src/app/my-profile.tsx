@@ -1,8 +1,11 @@
+import { PROFILE_VIEW_TOTALS } from "@/data/profile-views";
 import { Avatar, GOLD_BG } from "@/components/member-ui";
 import { usePickImage } from "@/components/form-fields";
 import { Card, MenuRow, SettingsScreen } from "@/components/settings-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { useConnections } from "@/lib/connection-store";
+import { useAdviser } from "@/lib/adviser-store";
+import { isUpcoming, useMeetings } from "@/lib/meeting-store";
 import { updateProfile, useSettings } from "@/lib/profile-store";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -96,6 +99,8 @@ function Action({ icon, label, onPress, gold }: { icon: IconName; label: string;
 export default function MyProfile() {
   const { profile: p } = useSettings();
   const { connections } = useConnections();
+  const upcomingMeetings = useMeetings().filter((m) => isUpcoming(m)).length;
+  const { status: adviser } = useAdviser();
   const pickPhoto = usePickImage((uri) => updateProfile({ photo: { uri } }));
   const editProfile = () => router.push("/edit-profile");
   const share = () => Share.share({ message: `${p.name} - ${p.designation}, ${p.company} on ABLN: https://abln.in/m/${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}` }).catch(() => {});
@@ -167,6 +172,16 @@ export default function MyProfile() {
       </View>
 
       <MenuRow icon="people-outline" title="My Connections" sub={`${connections.length} ${connections.length === 1 ? "connection" : "connections"}`} onPress={() => router.push("/my-connections")} />
+      <MenuRow icon="calendar-outline" title="My Meetings" sub={`${upcomingMeetings} upcoming`} onPress={() => router.push("/my-meetings")} />
+      <MenuRow icon="eye-outline" title="Who Viewed My Profile" sub={`${PROFILE_VIEW_TOTALS.all} people in the last 30 days`} onPress={() => router.push("/profile-views")} />
+
+      <MenuRow
+        icon="ribbon-outline"
+        title={adviser === "approved" ? "My Adviser Profile" : adviser === "pending" ? "Adviser Application" : "Become an Adviser"}
+        sub={adviser === "approved" ? "View and edit your adviser details" : adviser === "pending" ? "Under review" : "Share your expertise with ABLN members"}
+        badge={adviser === "none" ? "New" : undefined}
+        onPress={() => router.push(adviser === "approved" ? "/adviser-profile" : adviser === "pending" ? "/adviser-status" : "/adviser-intro")}
+      />
 
       <Section title="Expertise" icon="ribbon-outline" items={p.expertise} />
       <Section title="Looking For" icon="locate-outline" items={p.lookingFor} />

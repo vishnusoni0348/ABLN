@@ -62,6 +62,10 @@ export default function Notifications() {
 
   const open = (n: AppNotification) => {
     markRead(n.id);
+    if (n.route) {
+      router.push(n.route as never);
+      return;
+    }
     if (n.requestId) {
       router.push({ pathname: "/connection-request", params: { id: n.requestId } });
       return;

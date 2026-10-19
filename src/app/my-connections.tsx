@@ -57,7 +57,7 @@ export default function MyConnections() {
   };
 
   const openProfile = (name: string) => router.push({ pathname: "/member-profile", params: { name } });
-  const contact = (m: Member | undefined, scheme: "tel" | "sms") => {
+  const contact = (m: Member | undefined, scheme: "tel") => {
     if (!m?.phone) return Alert.alert("Contact unavailable", `${m?.name ?? "This member"} hasn't shared a phone number.`);
     Linking.openURL(`${scheme}:${m.phone.replace(/\s/g, "")}`).catch(() => Alert.alert("Couldn't open", "This device can't place calls or send messages."));
   };
@@ -72,7 +72,7 @@ export default function MyConnections() {
   const menuItems = (name: string, m?: Member): { icon: ComponentProps<typeof Ionicons>["name"]; title: string; sub: string; onPress: () => void; danger?: boolean }[] => [
     { icon: "person-outline", title: "View Profile", sub: "See full profile and details", onPress: () => openProfile(name) },
     { icon: "call-outline", title: "Call", sub: "Call on phone", onPress: () => contact(m, "tel") },
-    { icon: "chatbubble-ellipses-outline", title: "Message", sub: "Send a message", onPress: () => contact(m, "sms") },
+    { icon: "chatbubble-ellipses-outline", title: "Message", sub: "Send a message", onPress: () => router.push({ pathname: "/chat", params: { name } }) },
     { icon: "calendar-outline", title: "Schedule Meeting", sub: "Pick a date and time", onPress: () => router.push({ pathname: "/schedule-meeting", params: { name } }) },
     { icon: "person-remove-outline", title: "Remove Connection", sub: "Remove from your connections", onPress: () => confirmRemove(name), danger: true },
   ];
@@ -331,7 +331,7 @@ export default function MyConnections() {
                     <Ionicons name="call-outline" size={16} color={Colors.goldDark} />
                     <Text style={[styles.actionText, { color: Colors.goldDark }]}>Call</Text>
                   </Pressable>
-                  <Pressable style={({ pressed }) => [styles.action, styles.actionPurple, pressed && styles.pressed]} onPress={() => contact(m, "sms")} accessibilityRole="button" accessibilityLabel={`Message ${c.name}`}>
+                  <Pressable style={({ pressed }) => [styles.action, styles.actionPurple, pressed && styles.pressed]} onPress={() => router.push({ pathname: "/chat", params: { name: c.name } })} accessibilityRole="button" accessibilityLabel={`Message ${c.name}`}>
                     <Ionicons name="chatbubble-ellipses-outline" size={16} color={PURPLE} />
                     <Text style={[styles.actionText, { color: PURPLE }]}>Message</Text>
                   </Pressable>

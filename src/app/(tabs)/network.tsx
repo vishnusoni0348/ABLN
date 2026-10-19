@@ -3,7 +3,7 @@ import { Colors, Fonts, Radius } from "@/constants/theme";
 import { EMPTY_FILTERS, type Filters, type SortKey } from "@/data/members";
 import { useConnections } from "@/lib/connection-store";
 import { setDirectory, toggleRequest, useDirectory } from "@/lib/directory-store";
-import { HeaderIconButton, TabHeader } from "@/components/tab-header";
+import { TabHeader } from "@/components/tab-header";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -174,14 +174,7 @@ export default function Network() {
           </Pressable>
         </View>
       </Modal>
-      <TabHeader
-        extraActions={
-          <>
-            <HeaderIconButton icon="bulb-outline" size={22} onPress={() => router.push("/my-advice")} label="My advice requests" />
-            <HeaderIconButton icon="people-circle-outline" size={24} onPress={() => router.push("/my-introductions")} label="My introduction requests" />
-          </>
-        }
-      />
+      <TabHeader />
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: 6, paddingBottom: 24 }]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Hero */}
         <View style={styles.hero}>
@@ -195,6 +188,22 @@ export default function Network() {
           />
           <Text style={styles.heroTitle}>Network</Text>
           <Text style={styles.heroSub}>Connect, collaborate and grow with business leaders.</Text>
+        </View>
+
+        {/* Requests */}
+        <View style={styles.quickRow}>
+          <Pressable style={({ pressed }) => [styles.quick, pressed && styles.pressed]} onPress={() => router.push("/my-advice")} accessibilityRole="button">
+            <View style={styles.quickIcon}>
+              <Ionicons name="bulb-outline" size={20} color={Colors.goldDark} />
+            </View>
+            <Text style={styles.quickLabel} numberOfLines={2}>My Advice Requests</Text>
+          </Pressable>
+          <Pressable style={({ pressed }) => [styles.quick, pressed && styles.pressed]} onPress={() => router.push("/my-introductions")} accessibilityRole="button">
+            <View style={styles.quickIcon}>
+              <Ionicons name="people-circle-outline" size={22} color={Colors.goldDark} />
+            </View>
+            <Text style={styles.quickLabel} numberOfLines={2}>My Introduction Requests</Text>
+          </Pressable>
         </View>
 
         {/* Search */}
@@ -395,6 +404,11 @@ const styles = StyleSheet.create({
   hero: { aspectRatio: HERO_RATIO, justifyContent: "center", gap: 6, overflow: "hidden", borderRadius: Radius.lg, paddingLeft: 16 },
   heroTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 24, lineHeight: 30 },
   heroSub: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 14, lineHeight: 20, maxWidth: "52%" },
+
+  quickRow: { flexDirection: "row", gap: 10 },
+  quick: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10, padding: 10, borderRadius: Radius.md, backgroundColor: Colors.white, ...CARD_SHADOW },
+  quickIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: GOLD_BG, alignItems: "center", justifyContent: "center" },
+  quickLabel: { flex: 1, color: Colors.navy, fontFamily: Fonts.semiBold, fontSize: 12 },
 
   searchRow: { flexDirection: "row", gap: 10 },
   search: {

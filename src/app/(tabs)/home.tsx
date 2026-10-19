@@ -11,7 +11,7 @@ import { setDirectory } from "@/lib/directory-store";
 import { useQuestions } from "@/lib/question-store";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ComponentProps, ReactNode, useEffect, useRef, useState } from "react";
+import { ComponentProps, ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { Image, ImageSourcePropType, NativeScrollEvent, NativeSyntheticEvent, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -102,18 +102,21 @@ function HeroSlider() {
   const indexRef = useRef(0);
   const paused = useRef(false);
 
-  const goTo = (i: number) => {
-    indexRef.current = i;
-    setIndex(i);
-    scrollRef.current?.scrollTo({ x: i * width, animated: true });
-  };
+  const goTo = useCallback(
+    (i: number) => {
+      indexRef.current = i;
+      setIndex(i);
+      scrollRef.current?.scrollTo({ x: i * width, animated: true });
+    },
+    [width],
+  );
 
   useEffect(() => {
     const id = setInterval(() => {
       if (!paused.current) goTo((indexRef.current + 1) % BANNERS.length);
     }, 4000);
     return () => clearInterval(id);
-  }, [width]);
+  }, [goTo]);
 
   const onEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     paused.current = false;
@@ -571,13 +574,14 @@ const styles = StyleSheet.create({
   },
   heroBtnText: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 12 },
 
-  searchRow: { flexDirection: "row", gap: 10 },
+  searchRow: { flexDirection: "row", gap: 10, alignItems: "center"},
   search: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
     height: 50,
+    lineHeight: 50,
     paddingHorizontal: 14,
     borderRadius: Radius.md,
     borderWidth: 1,

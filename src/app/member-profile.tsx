@@ -128,11 +128,14 @@ export default function MemberProfile() {
     activeIntro ? router.push({ pathname: "/introduction-details", params: { id: activeIntro.id } }) : router.push({ pathname: "/request-introduction", params: { name: member.name } });
   const share = () => Share.share({ message: `${member.name} - ${member.role}, ${member.company} on ABLN` }).catch(() => {});
   const closeSheet = () => setSheet(false);
-  const contact = (scheme: "tel" | "sms") => {
+  const contact = (scheme: "tel") => {
     if (!member.phone) return Alert.alert("Contact unavailable", `${member.name} hasn't shared a phone number.`);
     Linking.openURL(`${scheme}:${member.phone.replace(/\s/g, "")}`).catch(() => Alert.alert("Couldn't open", "This device can't place calls or send messages."));
   };
   const meet = () => router.push({ pathname: "/schedule-meeting", params: { name: member.name } });
+  const isConnected = connections.some((c) => c.name === member.name);
+  // Outside your network the chat allows a single message (enforced in the chat screen).
+  const onMessage = () => router.push({ pathname: "/chat", params: { name: member.name } });
   const send = () => {
     if (!isRequested) {
       toggleRequest(member.name);
@@ -210,9 +213,9 @@ export default function MemberProfile() {
       </Modal>
 
       {member.restricted ? (
-        <RestrictedProfile member={member} top={insets.top} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onMore={() => setSheet(true)} />
+        <RestrictedProfile member={member} top={insets.top} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onMore={() => setSheet(true)} onMessage={onMessage} />
       ) : (
-        <FullProfile member={member} top={insets.top} connected={connections.some((c) => c.name === member.name)} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onShare={share} onMore={() => setSheet(true)} onCall={() => contact("tel")} onMessage={() => contact("sms")} onMeet={meet} />
+        <FullProfile member={member} top={insets.top} connected={isConnected} requested={isRequested} onConnect={onConnect} onIntro={intro} introLabel={introLabel} onShare={share} onMore={() => setSheet(true)} onCall={() => contact("tel")} onMessage={onMessage} onMeet={meet} />
       )}
     </View>
   );
@@ -244,7 +247,7 @@ function FullProfile({ member: m, top, connected, requested, onConnect, onIntro,
             <View style={styles.sideBtns}>
               {requested ? <OutlineButton label="Cancel Request" onPress={onConnect} /> : <GoldButton label="Connect" onPress={onConnect} />}
               <OutlineButton label={introLabel === "Request Introduction" ? "Request Intro" : "Intro Status"} onPress={onIntro} />
-              <OutlineButton label="Share" onPress={onShare} />
+              {connected ? <OutlineButton label="Share" onPress={onShare} /> : <OutlineButton label="Message" onPress={onMessage} />}
             </View>
           </View>
 
@@ -302,7 +305,7 @@ function FullProfile({ member: m, top, connected, requested, onConnect, onIntro,
   );
 }
 
-function RestrictedProfile({ member: m, top, requested, onConnect, onIntro, introLabel, onMore }: { member: Member; top: number; requested: boolean; onConnect: () => void; onIntro: () => void; introLabel: string; onMore: () => void }) {
+function RestrictedProfile({ member: m, top, requested, onConnect, onIntro, introLabel, onMore, onMessage }: { member: Member; top: number; requested: boolean; onMessage: () => void; onConnect: () => void; onIntro: () => void; introLabel: string; onMore: () => void }) {
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scroll, { paddingTop: top + 56 }]}>
@@ -337,6 +340,7 @@ function RestrictedProfile({ member: m, top, requested, onConnect, onIntro, intr
             {requested ? <OutlineButton label="Cancel Request" onPress={onConnect} style={styles.flex} /> : <GoldButton label="Connect" onPress={onConnect} style={styles.flex} />}
             <OutlineButton label={introLabel} onPress={onIntro} style={styles.flex} />
           </View>
+          <OutlineButton label="Message" onPress={onMessage} style={{ marginTop: 10 }} />
 
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Basic Information</Text>

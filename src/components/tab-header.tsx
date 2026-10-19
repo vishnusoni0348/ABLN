@@ -1,4 +1,5 @@
 import { Colors } from "@/constants/theme";
+import { useUnreadMessages } from "@/lib/chat-store";
 import { useUnreadCount } from "@/lib/notification-store";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -21,6 +22,7 @@ export function HeaderIconButton({ icon, size = 22, onPress, label, dot }: { ico
 export function TabHeader({ extraActions, onAvatarPress }: { extraActions?: ReactNode; onAvatarPress?: () => void }) {
   const insets = useSafeAreaInsets();
   const unreadCount = useUnreadCount();
+  const unreadMessages = useUnreadMessages();
   const avatar = <Image source={require("../../assets/images/avatar-user.png")} style={styles.avatar} />;
 
   return (
@@ -28,6 +30,7 @@ export function TabHeader({ extraActions, onAvatarPress }: { extraActions?: Reac
       <Image source={require("../../assets/images/abln-logo-light.png")} style={styles.logo} resizeMode="contain" />
       <View style={styles.actions}>
         {extraActions}
+        <HeaderIconButton icon="chatbubble-ellipses-outline" onPress={() => router.push("/messages")} label="Messages" dot={unreadMessages > 0} />
         <HeaderIconButton icon="notifications-outline" onPress={() => router.push("/notifications")} label="Notifications" dot={unreadCount > 0} />
         <Pressable onPress={onAvatarPress ?? (() => router.push("/my-profile"))} hitSlop={6} accessibilityLabel="My profile">
           {avatar}

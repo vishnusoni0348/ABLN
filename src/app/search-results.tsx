@@ -45,7 +45,11 @@ export default function SearchResults() {
     return () => clearTimeout(t);
   }, []);
   // New results always start on page one.
-  useEffect(() => setShown(PAGE_SIZE), [results]);
+  const [shownFor, setShownFor] = useState(results);
+  if (shownFor !== results) {
+    setShownFor(results);
+    setShown(PAGE_SIZE);
+  }
   useEffect(() => () => clearTimeout(moreTimer.current), []);
 
   const loadMore = () => {

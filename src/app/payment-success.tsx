@@ -3,11 +3,11 @@ import { Crown } from "@/components/membership-ui";
 import { GoldButton } from "@/components/opportunity-ui";
 import { DetailsCard, StatusHero } from "@/components/payment-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
-import { formatDateTime, formatInr, receiptText, usePayment, usePayments } from "@/lib/payment-store";
+import { formatDateTime, formatInr, usePayment, usePayments } from "@/lib/payment-store";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PaymentSuccess() {
@@ -60,7 +60,7 @@ export default function PaymentSuccess() {
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <GoldButton label="Go to Membership" onPress={() => router.replace("/membership")} />
         <View style={styles.actions}>
-          <Pressable onPress={() => Share.share({ message: receiptText(payment) })} style={({ pressed }) => [styles.action, pressed && styles.pressed]} accessibilityRole="button">
+          <Pressable onPress={() => router.push({ pathname: "/invoice-detail", params: { id: payment.id } })} style={({ pressed }) => [styles.action, pressed && styles.pressed]} accessibilityRole="button">
             <Ionicons name="document-text-outline" size={18} color={Colors.navy} />
             <Text style={styles.actionText}>Download Receipt</Text>
           </Pressable>

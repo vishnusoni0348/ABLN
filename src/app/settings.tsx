@@ -38,6 +38,9 @@ export default function Settings() {
       <Text style={styles.support}>SUPPORT</Text>
       <MenuRow icon="headset-outline" title="Help & Support" sub="Get help or contact support" onPress={() => router.push("/help-support")} />
       <MenuRow icon="help-circle-outline" title="FAQ" sub="Find answers to common questions" onPress={() => router.push("/faq-categories")} />
+      <MenuRow icon="document-text-outline" title="Terms & Conditions" sub="Read our terms of use" onPress={() => router.push("/terms-conditions")} />
+      <MenuRow icon="shield-checkmark-outline" title="Privacy Policy" sub="How we protect your data" onPress={() => router.push("/privacy-policy")} />
+      <MenuRow icon="information-circle-outline" title="About ABLN" sub="Mission, version and contact" onPress={() => router.push("/about")} />
 
       <View style={{ marginTop: 6, gap: 10 }}>
         <OutlineBtn label="Log Out" icon="log-out-outline" color={Colors.goldDark} onPress={logOut} />

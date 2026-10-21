@@ -22,15 +22,15 @@ export const formatDob = (v: string) => {
   return d ? `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}` : "";
 };
 
-type BoxProps = { label: string; icon: IconName; required?: boolean; error?: string; onPress?: () => void; trailing?: ReactNode; style?: StyleProp<ViewStyle>; children: ReactNode };
+type BoxProps = { label: string; icon: IconName; required?: boolean; error?: string; onPress?: () => void; trailing?: ReactNode; style?: StyleProp<ViewStyle>; disabled?: boolean; children: ReactNode };
 
 /** Outlined field with the icon on the left and a small label above the value. */
-export function BoxField({ label, icon, required, error, onPress, trailing, style, children }: BoxProps) {
+export function BoxField({ label, icon, required, error, onPress, trailing, style, disabled, children }: BoxProps) {
   const Wrap = onPress ? Pressable : View;
   return (
     <View style={[styles.group, style]}>
-      <Wrap onPress={onPress} accessibilityRole={onPress ? "button" : undefined} accessibilityLabel={onPress ? label : undefined} style={[styles.box, !!error && styles.boxError]}>
-        <Ionicons name={icon} size={22} color={Colors.navy} />
+      <Wrap onPress={onPress} accessibilityRole={onPress ? "button" : undefined} accessibilityLabel={onPress ? label : undefined} style={[styles.box, !!error && styles.boxError, disabled && styles.boxDisabled]}>
+        <Ionicons name={icon} size={22} color={disabled ? Colors.textSecondary : Colors.navy} />
         <View style={styles.body}>
           <Text style={styles.label}>
             {label}
@@ -38,7 +38,7 @@ export function BoxField({ label, icon, required, error, onPress, trailing, styl
           </Text>
           {children}
         </View>
-        {trailing}
+        {disabled ? <Ionicons name="lock-closed" size={16} color={Colors.textMuted} /> : trailing}
       </Wrap>
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
@@ -47,10 +47,10 @@ export function BoxField({ label, icon, required, error, onPress, trailing, styl
 
 type TextBoxProps = Omit<BoxProps, "children" | "onPress" | "trailing"> & Pick<TextInputProps, "value" | "onChangeText" | "keyboardType" | "autoCapitalize" | "autoCorrect" | "maxLength" | "placeholder">;
 
-export function TextBox({ label, icon, required, error, style, ...input }: TextBoxProps) {
+export function TextBox({ label, icon, required, error, style, disabled, ...input }: TextBoxProps) {
   return (
-    <BoxField label={label} icon={icon} required={required} error={error} style={style}>
-      <TextInput accessibilityLabel={label} placeholderTextColor={Colors.textMuted} style={styles.value} {...input} />
+    <BoxField label={label} icon={icon} required={required} error={error} style={style} disabled={disabled}>
+      <TextInput accessibilityLabel={label} placeholderTextColor={Colors.textMuted} style={[styles.value, disabled && styles.valueDisabled]} editable={!disabled} {...input} />
     </BoxField>
   );
 }
@@ -110,12 +110,12 @@ export function PhoneBox({ dialCode, dialCodes, onDialCode, value, onChangeText,
     <>
       <BoxField {...box} icon="call-outline">
         <View style={styles.phoneRow}>
-          <Pressable onPress={() => setOpen(true)} accessibilityRole="button" accessibilityLabel="Dial code" style={styles.dial}>
+          <Pressable onPress={() => setOpen(true)} disabled={box.disabled} accessibilityRole="button" accessibilityLabel="Dial code" style={styles.dial}>
             <Text style={styles.flag}>{FLAGS[dialCode] ?? "🌐"}</Text>
             <Text style={styles.dialText}>{dialCode}</Text>
-            <Ionicons name="chevron-down" size={14} color={Colors.navy} />
+            {box.disabled ? null : <Ionicons name="chevron-down" size={14} color={Colors.navy} />}
           </Pressable>
-          <TextInput accessibilityLabel={box.label} value={value} onChangeText={onChangeText} keyboardType="phone-pad" maxLength={14} placeholderTextColor={Colors.textMuted} style={styles.value} />
+          <TextInput accessibilityLabel={box.label} value={value} onChangeText={onChangeText} editable={!box.disabled} keyboardType="phone-pad" maxLength={14} placeholderTextColor={Colors.textMuted} style={[styles.value, box.disabled && styles.valueDisabled]} />
         </View>
       </BoxField>
       <OptionSheet visible={open} title="Dial Code" options={dialCodes} value={dialCode} onClose={() => setOpen(false)} onPick={onDialCode} render={(o) => `${FLAGS[o] ?? "🌐"}  ${o}`} />
@@ -173,6 +173,8 @@ export function DateBox({ value, onChange, ...box }: DateBoxProps) {
 }
 
 const styles = StyleSheet.create({
+  boxDisabled: { backgroundColor: "#F1F4F8" },
+  valueDisabled: { color: Colors.textSecondary },
   group: { marginTop: 12 },
   box: { minHeight: 60, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingVertical: 8, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.white },
   boxError: { borderColor: Colors.error },

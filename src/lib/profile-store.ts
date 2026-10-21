@@ -78,6 +78,8 @@ type State = {
   notifications: NotificationPrefs;
   language: string;
   blocked: BlockedMember[];
+  /** Mock credential until the auth API exists; null means the member has not set a password. */
+  password: string | null;
 };
 
 // Sample member until the profile API is wired up.
@@ -133,6 +135,7 @@ let state: State = {
   },
   language: "English (India)",
   blocked: [],
+  password: null,
 };
 const listeners = new Set<() => void>();
 
@@ -144,6 +147,8 @@ function set(patch: Partial<State>) {
 export const updateProfile = (patch: Partial<Profile>) => set({ profile: { ...state.profile, ...patch } });
 export const updatePrivacy = (patch: Partial<PrivacySettings>) => set({ privacy: { ...state.privacy, ...patch } });
 export const updateNotifications = (patch: Partial<NotificationPrefs>) => set({ notifications: { ...state.notifications, ...patch } });
+export const setPassword = (password: string) => set({ password });
+export const checkPassword = (password: string) => state.password !== null && state.password === password;
 export const setLanguage = (language: string) => set({ language });
 
 export function blockMember(name: string) {

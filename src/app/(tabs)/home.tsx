@@ -264,9 +264,11 @@ export default function Home() {
 
         {/* Search */}
         <View style={styles.searchRow}>
-          <View style={styles.search}>
+          <Pressable style={styles.search} onPress={() => router.push("/global-search")} accessibilityRole="search" accessibilityLabel="Open global search">
             <Ionicons name="search-outline" size={20} color={Colors.navy} />
             <TextInput
+              editable={false}
+              pointerEvents="none"
               placeholder="Search members, businesses, industries, opportunities..."
               placeholderTextColor={Colors.textMuted}
               style={styles.searchInput}
@@ -281,7 +283,7 @@ export default function Home() {
                 <Ionicons name="close-circle" size={18} color={Colors.textMuted} />
               </Pressable>
             ) : null}
-          </View>
+          </Pressable>
           <Pressable
             style={({ pressed }) => [styles.filter, pressed && styles.pressed]}
             onPress={openFilters}

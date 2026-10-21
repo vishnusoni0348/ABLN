@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function IntroductionReceived() {
@@ -135,7 +135,7 @@ Your reason: “${req.declineReason}”` : ""}
         ) : null}
       </ScrollView>
       <Modal visible={declining} transparent animationType="fade" onRequestClose={() => setDeclining(false)}>
-        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <KeyboardAvoidingView style={styles.backdrop} behavior="padding">
           <View style={styles.dialog}>
             <Text style={styles.dialogTitle}>Decline request?</Text>
             <Text style={styles.dialogBody}>{req.requester} will be notified. You can add a reason (optional).</Text>

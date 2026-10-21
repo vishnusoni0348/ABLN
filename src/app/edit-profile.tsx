@@ -38,8 +38,6 @@ export default function EditProfile() {
   const save = () => {
     const next: Record<string, string> = {};
     if (!form.name.trim()) next.name = "Full name is required";
-    if (!EMAIL_RE.test(form.email.trim())) next.email = "Enter a valid email address";
-    if (form.mobile.replace(/\D/g, "").length < 10) next.mobile = "Enter a valid 10-digit mobile number";
     if (!form.city.trim()) next.city = "Location is required";
     if (!form.designation.trim()) next.designation = "Designation is required";
     if (!form.pocName.trim()) next.pocName = "Contact person name is required";
@@ -52,7 +50,7 @@ export default function EditProfile() {
     setErrors(next);
     if (Object.keys(next).length) {
       setTab(
-        next.name || next.email || next.mobile || next.city
+        next.name || next.city
           ? "personal"
           : next.productLink || next.serviceLink
             ? "expertise"
@@ -109,8 +107,8 @@ export default function EditProfile() {
 
           <TextBox label="Full Name" icon="person-outline" required value={form.name} onChangeText={(v) => set("name", v)} error={errors.name} autoCapitalize="words" />
           <DateBox label="Date of Birth" icon="gift-outline" value={form.dob} onChange={(v) => set("dob", v)} />
-          <TextBox label="Email" icon="mail-outline" required value={form.email} onChangeText={(v) => set("email", v)} error={errors.email} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} />
-          <PhoneBox label="Mobile Number" required dialCode={form.dialCode} dialCodes={DIAL_CODES} onDialCode={(v) => set("dialCode", v)} value={form.mobile} onChangeText={(v) => set("mobile", v)} error={errors.mobile} />
+          <TextBox label="Email" icon="mail-outline" disabled value={form.email} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} />
+          <PhoneBox label="Mobile Number" disabled dialCode={form.dialCode} dialCodes={DIAL_CODES} onDialCode={() => {}} value={form.mobile} onChangeText={() => {}} />
           <PickBox label="Gender" icon="person-circle-outline" placeholder="Select" value={form.gender} options={GENDERS} onChange={(v) => set("gender", v)} />
           <PickBox
             label="Location"

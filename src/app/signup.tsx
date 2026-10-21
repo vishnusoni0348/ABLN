@@ -8,7 +8,6 @@ import { useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -25,7 +24,7 @@ export default function Signup() {
   const { width } = useWindowDimensions();
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
-  const logoWidth = Math.min(width * 0.62, 260);
+  const logoWidth = Math.min(width * 0.44, 180);
 
   return (
     <View style={styles.container}>
@@ -36,7 +35,7 @@ export default function Signup() {
         resizeMode="cover"
       />
 
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardAvoidingView style={styles.flex} behavior="padding">
         <ScrollView
           contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24 }]}
           keyboardShouldPersistTaps="handled"
@@ -48,7 +47,7 @@ export default function Signup() {
 
           <View style={styles.header}>
             <Image
-              source={require("../../assets/images/abln-logo.png")}
+              source={require("../../assets/images/abln-logo-light.png")}
               style={{ width: logoWidth, height: logoWidth * (773 / 2033) }}
               resizeMode="contain"
             />

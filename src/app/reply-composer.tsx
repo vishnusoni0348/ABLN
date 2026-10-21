@@ -6,7 +6,7 @@ import { postAnswer, postReply, useAnswer, useQuestion } from "@/lib/question-st
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const MAX = 500;
@@ -33,7 +33,7 @@ export default function ReplyComposer() {
   };
 
   return (
-    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={[styles.container, { paddingTop: insets.top }]} behavior="padding">
       <StatusBar style="dark" />
       <View style={styles.pad}>
         <ScreenHeader title={replying ? "Reply to Answer" : "Answer Question"} />

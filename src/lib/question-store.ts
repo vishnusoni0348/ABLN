@@ -1,6 +1,7 @@
 import { type Answer, type Reply, seedAnswers, seedReplies } from "@/data/answers";
 import { catsOf, EMPTY_Q, MAX_CATEGORIES, QUESTIONS, type QCategory, type QFilters, type Question } from "@/data/questions";
 import { CURRENT_USER } from "@/lib/introduction-store";
+import { stampSaved } from "@/lib/saved-store";
 import { useSyncExternalStore } from "react";
 
 // Ask Network state shared by the feed, filter and results screens.
@@ -21,7 +22,10 @@ export const setQFilters = (patch: Partial<QFilters>) => set({ filters: { ...sta
 export const resetQFilters = () => set({ filters: EMPTY_Q });
 export const setQTab = (tab: QTab) => set({ tab });
 const toggle = (list: string[], id: string) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
-export const toggleSavedQ = (id: string) => set({ saved: toggle(state.saved, id) });
+export function toggleSavedQ(id: string) {
+  if (!state.saved.includes(id)) stampSaved(`question:${id}`);
+  set({ saved: toggle(state.saved, id) });
+}
 export const toggleHelpfulQ = (id: string) => set({ helpful: toggle(state.helpful, id) });
 
 export const setDraft = (patch: Partial<Draft>) => set({ draft: { ...state.draft, ...patch } });

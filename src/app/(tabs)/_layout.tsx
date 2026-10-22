@@ -19,6 +19,8 @@ const TABS: { key: string; route?: string; icon: IconName; iconOn: IconName; lab
 ];
 
 const MEMBERSHIP_SCREENS = ["choose-plan", "compare-plans", "membership-status", "renew-membership"];
+// Reached from Settings; hidden tabs so the bar stays visible, with no tab highlighted.
+const SAVED_SCREENS = ["saved", "saved-items", "saved-members"];
 
 function TabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
@@ -59,7 +61,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="events" />
       <Tabs.Screen name="partners" />
       <Tabs.Screen name="membership" />
-      {MEMBERSHIP_SCREENS.map((name) => (
+      {[...MEMBERSHIP_SCREENS, ...SAVED_SCREENS].map((name) => (
         <Tabs.Screen key={name} name={name} options={{ href: null }} />
       ))}
     </Tabs>

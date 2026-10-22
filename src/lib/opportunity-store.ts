@@ -1,4 +1,5 @@
 import { EMPTY_FILTERS, type Filters, MY_OPPORTUNITIES, type MineStatus, type MyOpportunity, type SortKey } from "@/data/opportunities";
+import { stampSaved } from "@/lib/saved-store";
 import { useSyncExternalStore } from "react";
 
 export const OFFERS = ["Partnership", "Investment", "Distribution", "Expertise", "Customers", "Other"] as const;
@@ -41,6 +42,7 @@ export function setOpportunities(patch: Partial<State>) {
 }
 
 export function toggleSaved(id: string) {
+  if (!state.saved.includes(id)) stampSaved(`opp:${id}`);
   setOpportunities({ saved: state.saved.includes(id) ? state.saved.filter((s) => s !== id) : [...state.saved, id] });
 }
 

@@ -32,6 +32,7 @@ export default function Settings() {
 
       <MenuRow icon="people-outline" title="Profile & Visibility" sub="Manage your profile and privacy" onPress={() => router.push("/privacy-settings")} />
       <MenuRow icon="notifications-outline" title="Notification Preferences" sub="Control your notifications" onPress={() => router.push("/notification-preferences")} />
+      <MenuRow icon="bookmark-outline" title="Saved" sub="Your saved opportunities, events and members" onPress={() => router.push("/saved")} />
       <MenuRow icon="ban-outline" title="Blocked Members" sub={blocked.length ? `${blocked.length} blocked` : "Manage blocked users"} onPress={() => router.push("/blocked-members")} />
       <MenuRow icon="settings-outline" title="Account Settings" sub="Update email, password etc." onPress={() => router.push("/account-settings")} />
 

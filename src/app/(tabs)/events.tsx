@@ -1,6 +1,6 @@
 import { EventCard, FeaturedEventCard, PillTabs } from "@/components/event-ui";
 import { SearchBar } from "@/components/opportunity-ui";
-import { TabHeader } from "@/components/tab-header";
+import { HeaderIconButton, TabHeader } from "@/components/tab-header";
 import { Colors, Fonts } from "@/constants/theme";
 import { EMPTY_EVENT_FILTERS, EVENTS, activeEventFilterCount, searchEvents } from "@/data/events";
 import { setEvents, useEvents } from "@/lib/event-store";
@@ -37,7 +37,7 @@ export default function Events() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      <TabHeader />
+      <TabHeader extraActions={<HeaderIconButton icon="ticket-outline" onPress={() => router.push("/my-events")} label="My events and tickets" />} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <Text style={styles.heroTitle}>Events</Text>
 

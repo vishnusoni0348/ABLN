@@ -4,6 +4,7 @@ import { findMember, type Member } from "@/data/members";
 import { recordSent, useConnections } from "@/lib/connection-store";
 import { toggleRequest, useDirectory } from "@/lib/directory-store";
 import { useLiveIntroTo } from "@/lib/introduction-store";
+import { toggleSavedMember, useSavedMembers } from "@/lib/saved-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -90,11 +91,16 @@ function QuickAction({ icon, label, onPress }: { icon: IconName; label: string; 
   );
 }
 
-function Header({ onMore }: { onMore: () => void }) {
+function Header({ name, onMore }: { name: string; onMore: () => void }) {
+  const { members } = useSavedMembers();
+  const saved = members.includes(name);
   return (
     <>
       <Pressable onPress={() => router.back()} hitSlop={12} style={[styles.roundBtn, styles.roundLeft]} accessibilityRole="button" accessibilityLabel="Go back">
         <Ionicons name="chevron-back" size={22} color={Colors.navy} />
+      </Pressable>
+      <Pressable onPress={() => toggleSavedMember(name)} hitSlop={12} style={[styles.roundBtn, styles.roundRightSave]} accessibilityRole="button" accessibilityLabel={saved ? "Remove from saved members" : "Save member"}>
+        <Ionicons name={saved ? "bookmark" : "bookmark-outline"} size={19} color={saved ? Colors.goldDark : Colors.navy} />
       </Pressable>
       <Pressable onPress={onMore} hitSlop={12} style={[styles.roundBtn, styles.roundRight]} accessibilityRole="button" accessibilityLabel="More options">
         <Ionicons name="ellipsis-horizontal" size={20} color={Colors.navy} />
@@ -300,7 +306,7 @@ function FullProfile({ member: m, top, connected, requested, onConnect, onIntro,
           </Section>
         </View>
       </ScrollView>
-      <Header onMore={onMore} />
+      <Header name={m.name} onMore={onMore} />
     </>
   );
 }
@@ -378,7 +384,7 @@ function RestrictedProfile({ member: m, top, requested, onConnect, onIntro, intr
           </View>
         </View>
       </ScrollView>
-      <Header onMore={onMore} />
+      <Header name={m.name} onMore={onMore} />
     </>
   );
 }
@@ -393,6 +399,7 @@ const styles = StyleSheet.create({
   roundBtn: { position: "absolute", top: 48, width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.9)" },
   roundLeft: { left: 16 },
   roundRight: { right: 16 },
+  roundRightSave: { right: 60 },
 
   cover: { width: "100%" },
   coverFade: { position: "absolute", left: 0, right: 0, bottom: 0, height: 50 },

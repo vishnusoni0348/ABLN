@@ -2,7 +2,6 @@ import { EventThumb } from "@/components/event-ui";
 import { GOLD_GRADIENT } from "@/components/opportunity-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { EVENTS, calendarUrl, formatEventDate } from "@/data/events";
-import { setEvents } from "@/lib/event-store";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -66,10 +65,7 @@ export default function EventRegistered() {
             </View>
 
             <Action icon="calendar-outline" label="Add to Calendar" onPress={() => Linking.openURL(calendarUrl(e))} />
-            <Action icon="document-text-outline" label="View My Registrations" onPress={() => {
-          setEvents({ tab: "Registered" });
-          router.replace("/events");
-        }} />
+            <Action icon="document-text-outline" label="View My Registrations" onPress={() => router.replace("/my-events")} />
             <Action icon="share-social-outline" label="Share Event" onPress={() => Share.share({ message: `${e.title} — ${formatEventDate(e.date)}, ${e.time}, ${e.location}` })} />
           </>
         ) : null}

@@ -3,6 +3,7 @@ import { CARD_SHADOW } from "@/components/member-ui";
 import { SettingsScreen } from "@/components/settings-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { FAQ_CATEGORIES } from "@/data/help";
+import { useSavedFaqs } from "@/lib/faq-store";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -10,10 +11,26 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function FaqCategories() {
   const [query, setQuery] = useState("");
+  const savedCount = useSavedFaqs().length;
 
   return (
     <SettingsScreen title="Frequently Asked Questions">
       <SearchBar value={query} onChangeText={setQuery} onSubmit={() => router.push({ pathname: "/faq-results", params: { q: query.trim() } })} />
+
+      {savedCount ? (
+        <Pressable onPress={() => router.push("/saved-faqs")} accessibilityRole="button" style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}>
+          <View style={styles.icon}>
+            <Ionicons name="bookmark" size={24} color={Colors.goldDark} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Saved FAQs</Text>
+            <Text style={styles.sub}>
+              {savedCount} saved {savedCount === 1 ? "answer" : "answers"}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={Colors.textSecondary} />
+        </Pressable>
+      ) : null}
 
       {FAQ_CATEGORIES.map((c) => (
         <Pressable
@@ -39,8 +56,8 @@ export default function FaqCategories() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14, borderRadius: Radius.lg, backgroundColor: Colors.white, ...CARD_SHADOW },
-  icon: { width: 48, height: 48, borderRadius: 14, backgroundColor: "#FEF6E6", alignItems: "center", justifyContent: "center" },
+  row: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14, borderRadius: Radius.lg, backgroundColor: Colors.white, ...CARD_SHADOW, },
+  icon: { width: 48, height: 48, borderRadius: 14, backgroundColor: "#FEF6E6", alignItems: "center", justifyContent: "center", },
   title: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 14 },
-  sub: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 12, marginTop: 2 },
+  sub: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 12, marginTop: 2, },
 });

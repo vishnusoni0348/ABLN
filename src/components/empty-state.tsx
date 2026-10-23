@@ -3,6 +3,7 @@ import { GOLD_GRADIENT } from "@/components/opportunity-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { ComponentProps } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -65,3 +66,16 @@ const styles = StyleSheet.create({
   cta: { height: 52, borderRadius: Radius.md, alignItems: "center", justifyContent: "center" },
   ctaText: { color: Colors.white, fontFamily: Fonts.bold, fontSize: 15 },
 });
+
+/** Generic "no data" state with the Explore Network action. */
+export function NoData({ inline }: { inline?: boolean }) {
+  return (
+    <EmptyState
+      icon="file-tray-outline"
+      title="Nothing here yet"
+      text="When there's something to show, it will appear here."
+      cta={{ label: "Explore Network", onPress: () => router.replace("/network") }}
+      inline={inline}
+    />
+  );
+}

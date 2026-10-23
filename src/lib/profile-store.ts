@@ -72,6 +72,10 @@ export type NotificationPrefs = {
 
 export type BlockedMember = { name: string; blockedAt: Date };
 
+export type Provider = "google" | "linkedin";
+/** Linked account email per provider; null means not connected. */
+export type ConnectedAccounts = Record<Provider, string | null>;
+
 type State = {
   profile: Profile;
   privacy: PrivacySettings;
@@ -80,6 +84,7 @@ type State = {
   blocked: BlockedMember[];
   /** Mock credential until the auth API exists; null means the member has not set a password. */
   password: string | null;
+  connected: ConnectedAccounts;
 };
 
 // Sample member until the profile API is wired up.
@@ -136,6 +141,7 @@ let state: State = {
   language: "English (India)",
   blocked: [],
   password: null,
+  connected: { google: null, linkedin: "rahul@techvision.com" },
 };
 const listeners = new Set<() => void>();
 
@@ -149,7 +155,10 @@ export const updatePrivacy = (patch: Partial<PrivacySettings>) => set({ privacy:
 export const updateNotifications = (patch: Partial<NotificationPrefs>) => set({ notifications: { ...state.notifications, ...patch } });
 export const setPassword = (password: string) => set({ password });
 export const checkPassword = (password: string) => state.password !== null && state.password === password;
-export const setLanguage = (language: string) => set({ language });
+// TODO: replace with the real OAuth flow; the linked email will come from the provider.
+export const connectAccount = (provider: Provider) => set({ connected: { ...state.connected, [provider]: state.profile.email } });
+export const disconnectAccount = (provider: Provider) => set({ connected: { ...state.connected, [provider]: null } });
+export const setLanguage =(language: string) => set({ language });
 
 export function blockMember(name: string) {
   if (state.blocked.some((b) => b.name === name)) return;

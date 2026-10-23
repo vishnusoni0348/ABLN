@@ -37,6 +37,7 @@
         }
       ],
       "@react-native-community/datetimepicker",
+      ["expo-contacts", { "contactsPermission": "Allow $(PRODUCT_NAME) to access your contacts so you can invite people to ABLN." }],
       "expo-sharing"
     ],
     "experiments": {

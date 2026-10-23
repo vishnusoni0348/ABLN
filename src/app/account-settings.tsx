@@ -4,7 +4,7 @@ import { LANGUAGES, setLanguage, useSettings } from "@/lib/profile-store";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 type Sheet = "language" | null;
 
@@ -21,7 +21,7 @@ export default function AccountSettings() {
       <MenuRow icon="lock-closed-outline" title={password === null ? "Set Password" : "Change Password"} sub={password === null ? "Log in with a password as well as OTP" : "Update your password"} onPress={() => router.push("/security-password")} />
       <MenuRow icon="notifications-outline" title="Notifications" sub="Manage your preferences" onPress={() => router.push("/notification-preferences")} />
       <MenuRow icon="language-outline" title="Language" sub={language} onPress={() => open("language")} />
-      <MenuRow icon="link-outline" title="Connected Accounts" sub="Manage linked accounts" onPress={() => Alert.alert("Connected Accounts", "This will be available soon.")} />
+      <MenuRow icon="link-outline" title="Connected Accounts" sub="Manage linked accounts" onPress={() => router.push("/connected-accounts")} />
       <MenuRow icon="person-remove-outline" title="Deactivate Account" sub="Hide your profile from ABLN" danger onPress={() => router.push("/deactivate-account")} />
 
       <BottomSheet visible={sheet === "language"} title="Language" onClose={close}>

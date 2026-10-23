@@ -36,6 +36,10 @@ export default function Settings() {
       <MenuRow icon="ban-outline" title="Blocked Members" sub={blocked.length ? `${blocked.length} blocked` : "Manage blocked users"} onPress={() => router.push("/blocked-members")} />
       <MenuRow icon="settings-outline" title="Account Settings" sub="Update email, password etc." onPress={() => router.push("/account-settings")} />
 
+      <Text style={styles.support}>REFER & FEEDBACK</Text>
+      <MenuRow icon="person-add-outline" title="Invite Members" sub="Share your invite link and referral code" onPress={() => router.push("/invite-members")} />
+      <MenuRow icon="star-outline" title="Rate & Feedback" sub="Tell us about your experience" onPress={() => router.push("/feedback")} />
+
       <Text style={styles.support}>SUPPORT</Text>
       <MenuRow icon="headset-outline" title="Help & Support" sub="Get help or contact support" onPress={() => router.push("/help-support")} />
       <MenuRow icon="help-circle-outline" title="FAQ" sub="Find answers to common questions" onPress={() => router.push("/faq-categories")} />

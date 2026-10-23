@@ -2,6 +2,7 @@ import { CARD_SHADOW } from "@/components/member-ui";
 import { Card, SettingsScreen } from "@/components/settings-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { findFaq } from "@/data/help";
+import { toggleSavedFaq, useSavedFaqs } from "@/lib/faq-store";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -10,7 +11,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 export default function FaqDetails() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const faq = findFaq(id);
-  const [saved, setSaved] = useState(false);
+  const savedIds = useSavedFaqs();
+  const saved = !!faq && savedIds.includes(faq.id);
   const [vote, setVote] = useState<"yes" | "no">();
 
   if (!faq) {
@@ -22,7 +24,7 @@ export default function FaqDetails() {
   }
 
   const bookmark = (
-    <Pressable onPress={() => setSaved((s) => !s)} hitSlop={10} accessibilityRole="button" accessibilityLabel={saved ? "Remove bookmark" : "Bookmark this answer"}>
+    <Pressable onPress={() => toggleSavedFaq(faq.id)} hitSlop={10} accessibilityRole="button" accessibilityLabel={saved ? "Remove bookmark" : "Bookmark this answer"}>
       <Ionicons name={saved ? "bookmark" : "bookmark-outline"} size={22} color={saved ? Colors.goldDark : Colors.navy} />
     </Pressable>
   );

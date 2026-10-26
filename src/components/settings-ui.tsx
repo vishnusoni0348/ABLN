@@ -3,7 +3,7 @@ import { Colors, Fonts, Radius } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { ComponentProps, ReactNode } from "react";
+import { ComponentProps, ReactNode, Ref } from "react";
 import { KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleProp, StyleSheet, Switch, Text, View, ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -12,7 +12,7 @@ type IconName = ComponentProps<typeof Ionicons>["name"];
 export const SOFT_GOLD = "#FEF6E6";
 
 /** Standard screen frame: pinned header, scrolling body and an optional pinned footer. */
-export function SettingsScreen({ title, right, children, footer }: { title: string; right?: ReactNode; children: ReactNode; footer?: ReactNode }) {
+export function SettingsScreen({ title, right, children, footer, scrollRef, onContentSizeChange }: { title: string; right?: ReactNode; children: ReactNode; footer?: ReactNode; scrollRef?: Ref<ScrollView>; onContentSizeChange?: () => void }) {
   const insets = useSafeAreaInsets();
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
@@ -21,6 +21,8 @@ export function SettingsScreen({ title, right, children, footer }: { title: stri
         <ScreenHeader title={title} right={right} />
       </View>
       <ScrollView
+        ref={scrollRef}
+        onContentSizeChange={onContentSizeChange}
         contentContainerStyle={[styles.scroll, { paddingBottom: footer ? 16 : insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"

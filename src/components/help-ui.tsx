@@ -1,5 +1,6 @@
 import { CARD_SHADOW } from "@/components/member-ui";
 import { Label } from "@/components/form-fields";
+import { StatusPill } from "@/components/support-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import type { Faq } from "@/data/help";
 import type { Ticket } from "@/lib/support-store";
@@ -67,9 +68,13 @@ export function FaqRow({ faq, showCategory = true }: { faq: Faq; showCategory?: 
 }
 
 export function TicketRow({ ticket }: { ticket: Ticket }) {
-  const open = ticket.status === "Open";
   return (
-    <View style={styles.ticket}>
+    <Pressable
+      onPress={() => router.push({ pathname: "/support-ticket", params: { id: ticket.id } })}
+      accessibilityRole="button"
+      accessibilityLabel={`Ticket ${ticket.id}, ${ticket.title}, ${ticket.status}`}
+      style={({ pressed }) => [styles.ticket, pressed && { opacity: 0.85 }]}
+    >
       <View style={{ flex: 1 }}>
         <Text style={styles.ticketTitle}>{ticket.title}</Text>
         <Text style={styles.ticketSummary} numberOfLines={1}>
@@ -78,12 +83,10 @@ export function TicketRow({ ticket }: { ticket: Ticket }) {
         <Text style={styles.ticketId}>#{ticket.id}</Text>
       </View>
       <View style={{ alignItems: "flex-end", gap: 8 }}>
-        <View style={[styles.status, { backgroundColor: open ? "#FDF1D8" : "#DFF4EA" }]}>
-          <Text style={[styles.statusText, { color: open ? Colors.goldDark : Colors.success }]}>{ticket.status}</Text>
-        </View>
+        <StatusPill status={ticket.status} />
         <Text style={styles.ticketId}>{ticket.date}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -177,8 +180,6 @@ const styles = StyleSheet.create({
   ticketTitle: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 14 },
   ticketSummary: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 12, marginTop: 3 },
   ticketId: { color: Colors.textSecondary, fontFamily: Fonts.regular, fontSize: 11, marginTop: 3 },
-  status: { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 3 },
-  statusText: { fontFamily: Fonts.semiBold, fontSize: 11 },
   textarea: { minHeight: 110, borderRadius: Radius.md, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.white, padding: 12, color: Colors.navy, fontFamily: Fonts.regular, fontSize: 14 },
   count: { alignSelf: "flex-end", color: Colors.textMuted, fontFamily: Fonts.regular, fontSize: 11, marginTop: 4 },
   shots: { flexDirection: "row", flexWrap: "wrap", gap: 10 },

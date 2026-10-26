@@ -158,7 +158,7 @@ export default function FilterMembers() {
         </Section>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
         <Pressable style={({ pressed }) => [styles.cancel, pressed && styles.pressed]} onPress={() => router.back()}>
           <Text style={styles.cancelText}>Cancel</Text>
         </Pressable>

@@ -82,7 +82,16 @@ export function distanceKm(a: string, b: string) {
 }
 /** "Jaipur, Rajasthan" style label for a known city. */
 export const placeLabel = (city: string) => (PLACES[city] ? `${city}, ${PLACES[city].region}` : city);
-export const placeCountry = (city: string) => PLACES[city]?.country ?? "";
+/**
+ * Stable pseudo-position of a member around their city centre, used by the members map
+ * until the API supplies real coordinates. `km` is 0.5-15, `angle` is in radians.
+ */
+export function memberSpot(name: string) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return { km: 0.5 + ((h % 1000) / 1000) * 14.5, angle: (((h >>> 10) % 360) * Math.PI) / 180 };
+}
+export const placeCountry =(city: string) => PLACES[city]?.country ?? "";
 export const COUNTRIES = ["India", "UAE", "Singapore", "USA"];
 export const INDUSTRIES = ["Technology", "Healthcare", "Manufacturing", "E-commerce", "Finance", "Real Estate", "Sustainability", "Education"];
 export const EXPERTISE = ["Strategy", "Marketing", "Operations", "Fundraising", "Sales", "Supply Chain", "Product", "Legal & Compliance"];

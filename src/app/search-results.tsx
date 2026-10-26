@@ -128,7 +128,6 @@ export default function SearchResults() {
                 autoCorrect={false}
               />
             )}
-            <Ionicons name="chevron-down" size={18} color={Colors.navy} />
           </View>
           <Pressable style={({ pressed }) => [styles.filter, pressed && styles.pressed]} onPress={() => router.navigate("/filter-members")} accessibilityRole="button" accessibilityLabel="Open filters">
             <Ionicons name="options-outline" size={22} color={Colors.goldDark} />

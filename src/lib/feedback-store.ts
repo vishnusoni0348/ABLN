@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from "react";
+
 export const FEEDBACK_CATEGORIES = [
   { key: "experience", label: "Overall Experience", icon: "star" },
   { key: "features", label: "Features", icon: "settings-outline" },
@@ -10,11 +12,22 @@ export type FeedbackCategory = (typeof FEEDBACK_CATEGORIES)[number]["key"];
 
 export const FEEDBACK_MAX = 500;
 
-export type Feedback = { rating: number; category: FeedbackCategory; comment: string; date: string };
+export type Feedback = { id: string; rating: number; category: FeedbackCategory; comment: string; date: string };
 
-const submitted: Feedback[] = [];
+// Kept in memory until the feedback API is wired up. Newest first.
+let submitted: Feedback[] = [];
+const listeners = new Set<() => void>();
+const subscribe = (l: () => void) => {
+  listeners.add(l);
+  return () => listeners.delete(l);
+};
 
-// Kept in memory until the feedback API is wired up.
-export function submitFeedback(input: Omit<Feedback, "date">) {
-  submitted.unshift({ ...input, date: new Date().toISOString() });
+export const useFeedbackList = () => useSyncExternalStore(subscribe, () => submitted);
+
+export const categoryOf = (key: FeedbackCategory) => FEEDBACK_CATEGORIES.find((c) => c.key === key) ?? FEEDBACK_CATEGORIES[0];
+
+export function submitFeedback(input: Pick<Feedback, "rating" | "category" | "comment">) {
+  const entry: Feedback = { ...input, id: `fb-${Date.now()}`, date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) };
+  submitted = [entry, ...submitted];
+  listeners.forEach((l) => l());
 }

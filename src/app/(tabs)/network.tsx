@@ -172,6 +172,19 @@ export default function Network() {
             <Text style={styles.moreLabel}>Advanced Filters</Text>
             <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
           </Pressable>
+          <Pressable
+            style={styles.moreRow}
+            onPress={() => {
+              setMoreOpen(false);
+              router.push("/members-map");
+            }}
+          >
+            <View style={styles.moreIcon}>
+              <Ionicons name="map-outline" size={20} color={Colors.goldDark} />
+            </View>
+            <Text style={styles.moreLabel}>Explore Members Map</Text>
+            <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+          </Pressable>
         </View>
       </Modal>
       <TabHeader />

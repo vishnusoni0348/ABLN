@@ -47,7 +47,7 @@ export default function HelpSupport() {
 
       {tickets.length ? (
         <>
-          <SectionRow title="Your Recent Reports" action="See All" onAction={() => router.push("/report-problem")} />
+          <SectionRow title="Your Recent Reports" action="See All" onAction={() => router.push("/support-tickets")} />
           {tickets.slice(0, 2).map((t) => (
             <TicketRow key={t.id} ticket={t} />
           ))}

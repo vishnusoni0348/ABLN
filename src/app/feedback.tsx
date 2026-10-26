@@ -1,4 +1,4 @@
-import { GoldButton, OutlineBtn, SettingsScreen, SuccessDialog } from "@/components/settings-ui";
+import { GoldButton, OutlineBtn, SettingsScreen } from "@/components/settings-ui";
 import { Colors, Fonts, Radius } from "@/constants/theme";
 import { FEEDBACK_CATEGORIES, FEEDBACK_MAX, FeedbackCategory, submitFeedback } from "@/lib/feedback-store";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,12 +17,11 @@ export default function Feedback() {
   const [rating, setRating] = useState(0);
   const [category, setCategory] = useState<FeedbackCategory>("experience");
   const [comment, setComment] = useState("");
-  const [done, setDone] = useState(false);
 
   const submit = () => {
     if (rating === 0) return Alert.alert("Rate your experience", "Tap a star to tell us how ABLN is working for you.");
     submitFeedback({ rating, category, comment: comment.trim() });
-    setDone(true);
+    router.replace("/feedback-success");
   };
 
   const rate = async () => {
@@ -34,7 +33,15 @@ export default function Feedback() {
   };
 
   return (
-    <SettingsScreen title="Feedback">
+    <SettingsScreen
+      title="Feedback"
+      right={
+        <Pressable onPress={() => router.push("/my-feedback")} hitSlop={8} accessibilityRole="button" accessibilityLabel="My Feedback" style={styles.myFeedback}>
+          <Ionicons name="document-text-outline" size={16} color={Colors.goldDark} />
+          <Text style={styles.myFeedbackText}>My Feedback</Text>
+        </Pressable>
+      }
+    >
       <Image source={require("../../assets/images/feedback-hero.png")} style={styles.hero} contentFit="contain" accessibilityLabel="Five star rating" />
       <View style={styles.titleBlock}>
         <Text style={styles.title}>How is your ABLN experience?</Text>
@@ -88,12 +95,13 @@ export default function Feedback() {
       <GoldButton label="Submit Feedback" onPress={submit} />
       <OutlineBtn label={STORE_LABEL} icon={Platform.OS === "android" ? "logo-google-playstore" : "logo-apple"} onPress={rate} />
 
-      <SuccessDialog visible={done} title="Thank you!" message="Your feedback has been submitted. We appreciate you helping us improve ABLN." onAction={() => router.back()} />
     </SettingsScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  myFeedback: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 12, height: 36, borderRadius: 18, backgroundColor: "#FEF6E6" },
+  myFeedbackText: { color: Colors.goldDark, fontFamily: Fonts.bold, fontSize: 12 },
   hero: { width: "100%", height: 190 },
   titleBlock: { alignItems: "center", gap: 6, paddingHorizontal: 8 },
   title: { color: Colors.navy, fontFamily: Fonts.bold, fontSize: 22, textAlign: "center" },

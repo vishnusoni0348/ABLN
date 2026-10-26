@@ -48,7 +48,7 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   // Full-bleed screens (splash/welcome, event hero) keep a transparent status bar.
-  const FULL_BLEED = ["/event-details", "/partner-details", "/adviser-intro", "/app-tour"];
+  const FULL_BLEED = ["/event-details", "/partner-details", "/adviser-intro", "/app-tour", "/welcome"];
   const showStatusBarBg = pathname !== "/" && pathname !== "/welcome" && !FULL_BLEED.some((p) => pathname.startsWith(p));
 
   return (

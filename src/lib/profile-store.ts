@@ -138,7 +138,7 @@ let state: State = {
     emailPartnerOffers: true,
     productUpdates: false,
   },
-  language: "English (India)",
+  language: "English",
   blocked: [],
   password: null,
   connected: { google: null, linkedin: "rahul@techvision.com" },
@@ -158,7 +158,7 @@ export const checkPassword = (password: string) => state.password !== null && st
 // TODO: replace with the real OAuth flow; the linked email will come from the provider.
 export const connectAccount = (provider: Provider) => set({ connected: { ...state.connected, [provider]: state.profile.email } });
 export const disconnectAccount = (provider: Provider) => set({ connected: { ...state.connected, [provider]: null } });
-export const setLanguage =(language: string) => set({ language });
+export const setLanguage = (language: string) => set({ language });
 
 export function blockMember(name: string) {
   if (state.blocked.some((b) => b.name === name)) return;
@@ -179,6 +179,15 @@ export function useSettings() {
   );
 }
 
-export const LANGUAGES = ["English (India)", "English (US)", "हिन्दी (Hindi)", "ગુજરાતી (Gujarati)", "मराठी (Marathi)"];
+/** Supported app languages. `label` is the native name and doubles as the stored value; `badge` is a flag emoji or native glyph. */
+export const LANGUAGES = [
+  { label: "English", badge: "🇬🇧" },
+  { label: "हिन्दी", badge: "🇮🇳" },
+  { label: "ગુજરાતી", badge: "ગ" },
+  { label: "मराठी", badge: "म" },
+  { label: "বাংলা", badge: "ব" },
+  { label: "தமிழ்", badge: "த" },
+  { label: "తెలుగు", badge: "అ" },
+] as const;
 export const GENDERS = ["Male", "Female", "Other", "Prefer not to say"];
 export const DIAL_CODES = ["+91", "+971", "+65", "+1", "+44"];
